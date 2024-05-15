@@ -4,6 +4,7 @@
 from board import *
 from player import *
 import numpy as np
+from mcts import *
 
 #Class definition for an AI player
 class heuristicAIPlayer(player):
@@ -64,35 +65,36 @@ class heuristicAIPlayer(player):
         randomEdge = np.random.randint(0, len(possibleRoads.keys()))
         self.build_road(list(possibleRoads.keys())[randomEdge][0], list(possibleRoads.keys())[randomEdge][1], board)
 
-    
-    def move(self, board):
-        print("AI Player {} playing...".format(self.name))
-        #Trade resources if there are excessive amounts of a particular resource
-        self.trade()
-        #Build a settlements, city and few roads
-        possibleVertices = board.get_potential_settlements(self)
-        if(possibleVertices != {} and (self.resources['BRICK'] > 0 and self.resources['WOOD'] > 0 and self.resources['SHEEP'] > 0 and self.resources['WHEAT'] > 0)):
-            randomVertex = np.random.randint(0, len(possibleVertices.keys()))
-            self.build_settlement(list(possibleVertices.keys())[randomVertex], board)
+    def run_action(self, action, board):
+        action_type = action[0]
+        if action_type == 'build_road':
+            _, v1, v2 = action
+            self.build_road(v1, v2, board)
+            
+        elif action_type == 'build_settlement':
+            _, v = action
+            self.build_settlement(v, board)
+            
+        elif action_type == 'build_city':
+            _, v = action
+            self.build_city(v, board)
 
-        #Build a City
-        possibleVertices = board.get_potential_cities(self)
-        if(possibleVertices != {} and (self.resources['WHEAT'] >= 2 and self.resources['ORE'] >= 3)):
-            randomVertex = np.random.randint(0, len(possibleVertices.keys()))
-            self.build_city(list(possibleVertices.keys())[randomVertex], board)
-
-        #Build a couple roads
-        for i in range(2):
-            if(self.resources['BRICK'] > 0 and self.resources['WOOD'] > 0):
-                possibleRoads = board.get_potential_roads(self)
-                randomEdge = np.random.randint(0, len(possibleRoads.keys()))
-                self.build_road(list(possibleRoads.keys())[randomEdge][0], list(possibleRoads.keys())[randomEdge][1], board)
-
-        #Draw a Dev Card with 1/3 probability
-        devCardNum = np.random.randint(0, 3)
-        if(devCardNum == 0):
+        elif action_type == 'draw_devCard':
             self.draw_devCard(board)
+            
+        elif action_type == 'trade_with_bank' or action_type == 'trade_with_bank_3:1' or action_type == 'trade_with_bank_2:1':
+            _, resource1, resource2 = action
+            self.trade_with_bank(resource1, resource2)
+
+    def move(self, board, queue): #TODO: create MCTS instance and call bestMove()
+        print("AI Player {} playing...".format(self.name))
         
+        #TODO: run MCTS
+        for _ in range(5): # arbitrary range for now, depends on resources
+            state = {'board': board, 'current_player': self, 'queue': queue}
+            tree = MCTS(state, self.exploration_param)
+            action = tree.bestMove() # tuple ('action', info, ...)
+            self.run_action(action, board)
         return
 
     #Wrapper function to control all trading
