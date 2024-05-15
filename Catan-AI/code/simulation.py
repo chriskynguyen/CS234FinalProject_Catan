@@ -9,49 +9,23 @@ import queue
 import numpy as np
 import sys, pygame
 import matplotlib.pyplot as plt
-import copy
 
 #Class to implement an only AI
 class catanAIGame():
-    #Create new gameboard
-    def __init__(self):
-        print("Initializing Settlers of Catan with only AI Players...")
-        self.board = catanBoard()
+    #Create gameboard from current board in mcts.py
+    def __init__(self, state):
+        self.board = state["board"]
 
         #Game State variables
         self.gameOver = False
         self.maxPoints = 10
-        self.numPlayers = 0
-
-        #Dictionary to keep track of dice statistics
-        self.diceStats = {2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0}
-        self.diceStats_list = []
-
-        while(self.numPlayers not in [3,4]): #Only accept 3 and 4 player games
-            try:
-                self.numPlayers = int(input("Enter Number of Players (3 or 4):"))
-            except:
-                print("Please input a valid number")
-
-        print("Initializing game with {} players...".format(self.numPlayers))
-        print("Note that Player 1 goes first, Player 2 second and so forth.")
-        
+        self.numPlayers = 3
+        self.player_name = state["current_player"].name
+        self.result = -1
         #Initialize blank player queue and initial set up of roads + settlements
-        self.playerQueue = queue.Queue(self.numPlayers)
-        self.gameSetup = True #Boolean to take care of setup phase
+        self.playerQueue = state["queue"]
 
-        #Initialize boardview object
-        self.boardView = catanGameView(self.board, self)
-
-        #Functiont to go through initial set up
-        self.build_initial_settlements()
-        self.playCatan()
-
-        #Plot diceStats histogram
-        plt.hist(self.diceStats_list, bins = 11)
-        plt.show()
-
-        return None
+        return self.playCatan()
     
 
     #Function to initialize players + build initial settlements for players
@@ -60,9 +34,7 @@ class catanAIGame():
         playerColors = ['black', 'darkslateblue', 'magenta4', 'orange1']
         for i in range(self.numPlayers):
             playerNameInput = input("Enter AI Player {} name: ".format(i+1))
-            usePPO = input("Use PPO: ".format(i+1))
-            exploration_param = input("Choose exploration parameter: ".format(i+1))
-            newPlayer = heuristicAIPlayer(playerNameInput, usePPO, exploration_param, playerColors[i])
+            newPlayer = heuristicAIPlayer(playerNameInput, playerColors[i])
             newPlayer.updateAI()
             self.playerQueue.put(newPlayer)
 
@@ -187,18 +159,49 @@ class catanAIGame():
                 print("Player {} takes Largest Army {}".format(player_i.name, prevPlayer))
 
 
+    #Wrapper function to control all trading
+    def trade(self, player_i):
+        for r1, r1_amount in player_i.resources.items():
+            if(r1_amount >= 6): #heuristic to trade if a player has more than 5 of a particular resource
+                for r2, r2_amount in player_i.resources.items():
+                    if(r2_amount < 1):
+                        player_i.trade_with_bank(r1, r2)
+                        break
+
+    # function to simulate moves
+    # TODO: implement with PPO
+    def sim_move(self, board, player_i):
+        self.trade(player_i)
+        #Build a settlements, city and few roads
+        possibleVertices = board.get_potential_settlements(player_i)
+        if(possibleVertices != {} and (player_i.resources['BRICK'] > 0 and player_i.resources['WOOD'] > 0 and player_i.resources['SHEEP'] > 0 and player_i.resources['WHEAT'] > 0)):
+            randomVertex = np.random.randint(0, len(possibleVertices.keys()))
+            player_i.build_settlement(list(possibleVertices.keys())[randomVertex], board)
+
+        #Build a City
+        possibleVertices = board.get_potential_cities(player_i)
+        if(possibleVertices != {} and (player_i.resources['WHEAT'] >= 2 and player_i.resources['ORE'] >= 3)):
+            randomVertex = np.random.randint(0, len(possibleVertices.keys()))
+            player_i.build_city(list(possibleVertices.keys())[randomVertex], board)
+
+        #Build a couple roads
+        for i in range(2):
+            if(player_i.resources['BRICK'] > 0 and player_i.resources['WOOD'] > 0):
+                possibleRoads = board.get_potential_roads(player_i)
+                randomEdge = np.random.randint(0, len(possibleRoads.keys()))
+                player_i.build_road(list(possibleRoads.keys())[randomEdge][0], list(possibleRoads.keys())[randomEdge][1], board)
+
+        #Draw a Dev Card with 1/3 probability
+        devCardNum = np.random.randint(0, 3)
+        if(devCardNum == 0):
+            player_i.draw_devCard(board)
 
     #Function that runs the main game loop with all players and pieces
     def playCatan(self):
         #self.board.displayBoard() #Display updated board
-        numTurns = 0
         while (self.gameOver == False):
             #Loop for each player's turn -> iterate through the player queue
             for currPlayer in self.playerQueue.queue:
-                numTurns += 1
-                print("---------------------------------------------------------------------------")
-                print("Current Player:", currPlayer.name)
-
                 turnOver = False #boolean to keep track of turn
                 diceRolled = False  #Boolean for dice roll status
                 
@@ -207,22 +210,16 @@ class catanAIGame():
                 currPlayer.devCardPlayedThisTurn = False
 
                 while(turnOver == False):
-
-                    #TO-DO: Add logic for AI Player to move
-                    #TO-DO: Add option of AI Player playing a dev card prior to dice roll
-                    
+ 
                     #Roll Dice and update player resources and dice stats
                     pygame.event.pump()
                     diceNum = self.rollDice()
                     diceRolled = True
                     self.update_playerResources(diceNum, currPlayer)
-                    self.diceStats[diceNum] += 1
-                    self.diceStats_list.append(diceNum)
 
-                    currPlayer.move(self.board, copy.deepcopy(self.playerQueue.queue)) #AI Player makes all its moves
+                    self.sim_move(self.board, currPlayer) #AI Player makes all its moves
                     #Check if AI player gets longest road and update Victory points
                     self.check_longest_road(currPlayer)
-                    print("Player:{}, Resources:{}, Points: {}".format(currPlayer.name, currPlayer.resources, currPlayer.victoryPoints))
                     
                     self.boardView.displayGameScreen()#Update back to original gamescreen
                     pygame.time.delay(300)
@@ -232,21 +229,16 @@ class catanAIGame():
                     if currPlayer.victoryPoints >= self.maxPoints:
                         self.gameOver = True
                         self.turnOver = True
-                        print("====================================================")
-                        print("PLAYER {} WINS IN {} TURNS!".format(currPlayer.name, int(numTurns/4)))
-                        print(self.diceStats)
-                        print("Exiting game in 10 seconds...")
-                        pygame.time.delay(10000)
                         break
 
                 if(self.gameOver):
+                    if currPlayer.name == self.player_name:
+                        self.result = 1
                     startTime = pygame.time.get_ticks()
                     runTime = 0
                     while(runTime < 5000): #5 second delay prior to quitting
                         runTime = pygame.time.get_ticks() - startTime
 
                     break
+        return self.result
                                    
-
-#Initialize new game and run
-newGame_AI = catanAIGame()

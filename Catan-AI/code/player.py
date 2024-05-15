@@ -9,9 +9,11 @@ class player():
     'Class Definition for Game Player'
 
     #Initialize a game player, we use A, B and C to identify
-    def __init__(self, playerName, playerColor):
+    def __init__(self, playerName, usePPO, exploration_param, playerColor):
         self.name = playerName
         self.color = playerColor
+        self.ppo = usePPO # specify if AI uses ppo during simulation or not
+        self.exploration_param = exploration_param
         self.victoryPoints = 0
         self.isAI = False
 
@@ -35,7 +37,7 @@ class player():
 
         #Dev cards in possession
         self.newDevCards = [] #List to keep the new dev cards draw - update the main list every turn
-        self.devCards = {'KNIGHT':0, 'VP':0, 'MONOPOLY':0, 'ROADBUILDER':0, 'YEAROFPLENTY':0} 
+        self.devCards = {'KNIGHT':0, 'VP':0, 'MONOPOLY':0, 'ROADBUILDER':0, 'YEAROFPLENTY':0} # TODO: get rid of everything besides VP
         self.devCardPlayedThisTurn = False
 
         self.visibleVictoryPoints = self.victoryPoints - self.devCards['VP']
