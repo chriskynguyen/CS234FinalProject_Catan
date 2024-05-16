@@ -15,7 +15,7 @@ class player():
         self.ppo = False # specify if AI uses ppo during simulation or not
         if usePPO == "yes":
             self.ppo = True
-        self.exploration_param = int(exploration_param)
+        self.exploration_param = float(exploration_param)
         self.victoryPoints = 0
         self.isAI = False
 
