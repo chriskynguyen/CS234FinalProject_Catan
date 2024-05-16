@@ -12,8 +12,10 @@ class player():
     def __init__(self, playerName, usePPO, exploration_param, playerColor):
         self.name = playerName
         self.color = playerColor
-        self.ppo = usePPO # specify if AI uses ppo during simulation or not
-        self.exploration_param = exploration_param
+        self.ppo = False # specify if AI uses ppo during simulation or not
+        if usePPO == "yes":
+            self.ppo = True
+        self.exploration_param = int(exploration_param)
         self.victoryPoints = 0
         self.isAI = False
 

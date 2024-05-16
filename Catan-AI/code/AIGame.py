@@ -60,7 +60,7 @@ class catanAIGame():
         playerColors = ['black', 'darkslateblue', 'magenta4', 'orange1']
         for i in range(self.numPlayers):
             playerNameInput = input("Enter AI Player {} name: ".format(i+1))
-            usePPO = input("Use PPO: ".format(i+1))
+            usePPO = input("Use PPO (yes or no): ".format(i+1))
             exploration_param = input("Choose exploration parameter: ".format(i+1))
             newPlayer = heuristicAIPlayer(playerNameInput, usePPO, exploration_param, playerColors[i])
             newPlayer.updateAI()
