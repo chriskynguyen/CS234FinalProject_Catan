@@ -37,7 +37,7 @@ class MCTS:
     Monte-Carlo Tree Search. Create tree then choose best move(s) for current turn
     """
     def __init__(self, state, exploration_param=1):
-        self.root_node = Node(state=state) # state is dict {'board' = board, 'current_player' = ai_player, 'queue' = playerQueue}
+        self.root_node = Node(state=state, action=()) # state is dict {'board' = board, 'current_player' = ai_player, 'queue' = playerQueue}
         self.exploration_param = exploration_param
         
 
@@ -236,7 +236,7 @@ class MCTS:
             node.value += result
             node = node.parent
 
-    def bestMove(self, iteration=200):
+    def bestMove(self, iterations=200):
         """
         Select next best move for current node and return best move node
         """
