@@ -207,18 +207,21 @@ class catanBoard(hexTile, Vertex):
     #Return these roads as a dictionary where key=vertex coordinates and values is the rect
     def get_potential_roads(self, player):
         colonisableRoads = {}
-        #Check potential roads from each road the player already has
+        # Check potential roads from each road the player already has
         for existingRoad in player.buildGraph['ROADS']:
-            for vertex_i in existingRoad: #Iterate over both vertices of this road
-                #Check neighbors from this vertex
+            for vertex_i in existingRoad:  # Iterate over both vertices of this road
+                # Check neighbors from this vertex
                 for indx, v_i in enumerate(self.boardGraph[vertex_i].edgeList):
-                    if((self.boardGraph[vertex_i].edgeState[indx][1] == False) and (self.boardGraph[vertex_i].state['Player'] in [None, player])): #Edge currently does not have a road and vertex isn't colonised by another player
-                        if((v_i, vertex_i) not in colonisableRoads.keys() and (vertex_i, v_i) not in colonisableRoads.keys()): #If the edge isn't already there in both its regular + opposite orientation
-                            #Use boolean to keep track of potential roads
-                            colonisableRoads[(vertex_i, v_i)] = True
-                            #print(vertex_i, v_i)
+                    if ((self.boardGraph[vertex_i].edgeState[indx][1] == False) and
+                            (self.boardGraph[vertex_i].state['Player'] in [None, player])):  # Edge currently does not have a road and vertex isn't colonised by another player
+                        if ((v_i, vertex_i) not in colonisableRoads.keys() and
+                                (vertex_i, v_i) not in colonisableRoads.keys()):  # If the edge isn't already there in both its regular + opposite orientation
+                            # use length to keep track of potential roads
+                            colonisableRoads[(vertex_i, v_i)] = 1  # Assuming each road segment is of length 1
+                            # print(vertex_i, v_i)
 
         return colonisableRoads
+
 
     
     #Function to get available settlements for colonisation for a particular player

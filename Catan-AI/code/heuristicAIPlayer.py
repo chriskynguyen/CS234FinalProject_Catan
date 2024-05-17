@@ -86,14 +86,18 @@ class heuristicAIPlayer(player):
             _, resource1, resource2 = action
             self.trade_with_bank(resource1, resource2)
 
+
     def move(self, board, queue): #TODO: create MCTS instance and call bestMove()
         print("AI Player {} playing...".format(self.name))
         
         #TODO: run MCTS
         for _ in range(5): # arbitrary range for now, depends on resources
             state = {'board': board, 'current_player': self, 'queue': queue}
+            print("Calling MCTS")
             tree = MCTS(state, self.exploration_param)
             action = tree.bestMove() # tuple ('action', info, ...)
+            if action[0] == 'end_turn':
+                break
             self.run_action(action, board)
         return
 
