@@ -8,6 +8,7 @@ from heuristicAIPlayer import *
 import math
 import random
 from collections import defaultdict
+import copy
 
 class Node:
     def __init__(self, state, action):
@@ -26,7 +27,7 @@ class Node:
         # visit count
         self.visits = 0
 
-        self.uct = 0
+        #self.uct = 0
 
         # action tuple
         self.action = action
@@ -87,9 +88,10 @@ class MCTS:
 
         # Append to actions[]
         # Add road actions
-        if num_bricks >= 1 and num_wood >= 1:
-            for road in potential_roads.keys():
-                actions.append(('build_road', road[0], road[1]))
+        for road, length in potential_roads.items():
+            if num_bricks >= length and num_wood >= length:
+                print('Possible road of length ' + str(length) + ' at ' + str(road[0]) + ' to ' + str(road[1]))
+                actions.append(('build_road', road[0], road[1], length))
 
         # Add settlement building actions
         if num_bricks >= 1 and num_wood >= 1 and num_sheep >= 1 and num_wheat >= 1:
@@ -103,7 +105,7 @@ class MCTS:
 
         # Draw Development Card
         if num_wheat >= 1 and num_ore >= 1 and num_sheep >= 1:
-            actions(('draw_devCard', ))
+            actions.append(('draw_devCard', ))
 
         # # Play Development Card
         # for dev_card, amount in player.devCards.items():
@@ -134,12 +136,16 @@ class MCTS:
                     if resource_1 != resource_2:
                         actions.append(('trade_with_bank_2:1', resource_1, resource_2))
 
+        # adding "end turn" action
+        actions.append(('end_turn', ))
+
         return actions
         
     # helper to apply an action and return the new state
     def apply_action(self, state, action):
         # create copy of the state
         new_state = state.copy()
+        #new_state = copy.deepcopy(state)
         board = new_state['board']
         player = new_state['current_player']
 
@@ -149,8 +155,11 @@ class MCTS:
         
         #check which action to take
         if action_type == 'build_road':
-            _, v1, v2 = action
-            player.build_road(v1, v2, board)
+            _, v1, v2, length = action
+            for _ in range(length):
+                player.build_road(v1, v2, board)
+                v1, v2 = v2, v1
+                
             
         elif action_type == 'build_settlement':
             _, v = action
@@ -171,6 +180,10 @@ class MCTS:
         elif action_type == 'trade_with_bank' or action_type == 'trade_with_bank_3:1' or action_type == 'trade_with_bank_2:1':
             _, resource1, resource2 = action
             player.trade_with_bank(resource1, resource2)
+
+        elif action_type == 'end_turn':
+            #player.end_turn()
+            pass
 
         # update player in new_state
         new_state['current_player'] = player
@@ -208,7 +221,7 @@ class MCTS:
             
             # get all legal actions from current node
             legal_actions = self.get_legal_actions(node.gameState)
-
+            print("Num legal actions:" + str(len(legal_actions)))   #DEBUG PRINT
             # create new child node for each legal action
             for action in legal_actions:
                 new_state = self.apply_action(node.gameState, action)
@@ -223,7 +236,8 @@ class MCTS:
         Simulate game for the given child node
         Result: Win(+1) and Lose(-1) 
         """
-        result = catanAIGame(node.gameState)
+        simulate = catanAIGame(node.gameState)
+        result = simulate.get_result()
         return result
 
     def backpropagation(self, node, result):
@@ -235,23 +249,31 @@ class MCTS:
             node.visits += 1
             node.value += result
             node = node.parent
+        node.visits += 1
 
-    def bestMove(self, iterations=200):
+    def bestMove(self, iterations=100):
         """
         Select next best move for current node and return best move node
         """
         for i in range(iterations):
+            print("HERE")
             # select node with best UCT
             best_node = self.selection(self.root_node)
             # expand node
             self.expansion(best_node)
             # simulate
-            result = self.simulation(best_node)
+            for child in best_node.children:
+                #simulate
+                result = self.simulation(child)
+                #backpropagate
+                self.backpropagation(child, result)
+
+            #result = self.simulation(best_node.children[])
             # backpropagate
-            self.backpropagation(best_node, result)
+            #self.backpropagation(best_node, result)
 
         # find child with most visits
-        max_visits = max(child.visits for child in self.root_node.children)
+        max_visits = max([child.visits for child in self.root_node.children])
         for child in self.root_node.children:
             if child.visits == max_visits:
                 return child.action

@@ -214,12 +214,19 @@ class catanAIGame():
                     #Roll Dice and update player resources and dice stats
                     pygame.event.pump()
                     diceNum = self.rollDice()
+                    print("Dice Rolled")
                     diceRolled = True
                     self.update_playerResources(diceNum, currPlayer)
                     self.diceStats[diceNum] += 1
                     self.diceStats_list.append(diceNum)
 
-                    currPlayer.move(self.board, copy.deepcopy(self.playerQueue.queue)) #AI Player makes all its moves
+                    copyQueue = queue.Queue(self.numPlayers) #TODO: fix queue
+                    for _ in range(self.numPlayers):
+                        ai_player = self.playerQueue.get()
+                        copyQueue.put(ai_player)
+                        self.playerQueue.put(ai_player)
+
+                    currPlayer.move(self.board, copyQueue) #AI Player makes all its moves
                     #Check if AI player gets longest road and update Victory points
                     self.check_longest_road(currPlayer)
                     print("Player:{}, Resources:{}, Points: {}".format(currPlayer.name, currPlayer.resources, currPlayer.victoryPoints))

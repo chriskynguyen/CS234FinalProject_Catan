@@ -53,10 +53,14 @@ class catanGame():
         playerColors = ['black', 'darkslateblue', 'magenta4', 'orange1']
         for i in range(self.numPlayers -1):
             playerNameInput = input("Enter Player {} name: ".format(i+1))
-            newPlayer = player(playerNameInput, playerColors[i])
+            usePPO = input("Use PPO (yes or no): ".format(i+1))
+            exploration_param = input("Choose exploration parameter: ".format(i+1))
+            newPlayer = player(playerNameInput, usePPO, exploration_param, playerColors[i])
             self.playerQueue.put(newPlayer)
 
-        test_AI_player = heuristicAIPlayer('Random-Greedy-AI', playerColors[i+1]) #Add the AI Player last
+        usePPO = input("Use PPO (yes or no): ".format(i+1))
+        exploration_param = input("Choose exploration parameter: ".format(i+1))
+        test_AI_player = heuristicAIPlayer('Random-Greedy-AI', usePPO, exploration_param, playerColors[i+1]) #Add the AI Player last
         test_AI_player.updateAI()
         self.playerQueue.put(test_AI_player)
 

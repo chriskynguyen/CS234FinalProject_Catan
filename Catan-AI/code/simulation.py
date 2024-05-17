@@ -25,57 +25,17 @@ class catanAIGame():
         #Initialize blank player queue and initial set up of roads + settlements
         self.playerQueue = state["queue"]
 
-        return self.playCatan()
+        self.playCatan()
+        return None
     
-
-    #Function to initialize players + build initial settlements for players
-    def build_initial_settlements(self):
-        #Initialize new players with names and colors
-        playerColors = ['black', 'darkslateblue', 'magenta4', 'orange1']
-        for i in range(self.numPlayers):
-            playerNameInput = input("Enter AI Player {} name: ".format(i+1))
-            newPlayer = heuristicAIPlayer(playerNameInput, playerColors[i])
-            newPlayer.updateAI()
-            self.playerQueue.put(newPlayer)
-
-        playerList = list(self.playerQueue.queue)
-
-        #Build Settlements and roads of each player forwards
-        for player_i in playerList: 
-            player_i.initial_setup(self.board)
-            pygame.event.pump()
-            self.boardView.displayGameScreen()
-            pygame.time.delay(1000)
-
-
-        #Build Settlements and roads of each player reverse
-        playerList.reverse()
-        for player_i in playerList: 
-            player_i.initial_setup(self.board)
-            pygame.event.pump()
-            self.boardView.displayGameScreen()
-            pygame.time.delay(1000)
-            
-            print("Player {} starts with {} resources".format(player_i.name, len(player_i.setupResources)))
-
-            #Initial resource generation
-            #check each adjacent hex to latest settlement
-            for adjacentHex in self.board.boardGraph[player_i.buildGraph['SETTLEMENTS'][-1]].adjacentHexList:
-                resourceGenerated = self.board.hexTileDict[adjacentHex].resource.type
-                if(resourceGenerated != 'DESERT'):
-                    player_i.resources[resourceGenerated] += 1
-                    print("{} collects 1 {} from Settlement".format(player_i.name, resourceGenerated))
-        
-        pygame.time.delay(5000)
-        self.gameSetup = False
-
+    def get_result(self):
+        return self.result
 
     #Function to roll dice 
     def rollDice(self):
         dice_1 = np.random.randint(1,7)
         dice_2 = np.random.randint(1,7)
         diceRoll = dice_1 + dice_2
-        print("Dice Roll = ", diceRoll, "{", dice_1, dice_2, "}")
 
         return diceRoll
 
@@ -94,7 +54,7 @@ class catanAIGame():
                         if(adjacentHex in hexResourcesRolled and self.board.hexTileDict[adjacentHex].robber == False): #This player gets a resource if hex is adjacent and no robber
                             resourceGenerated = self.board.hexTileDict[adjacentHex].resource.type
                             player_i.resources[resourceGenerated] += 1
-                            print("{} collects 1 {} from Settlement".format(player_i.name, resourceGenerated))
+                            #print("{} collects 1 {} from Settlement".format(player_i.name, resourceGenerated))
                 
                 #Check each City the player has
                 for cityCoord in player_i.buildGraph['CITIES']:
@@ -102,15 +62,15 @@ class catanAIGame():
                         if(adjacentHex in hexResourcesRolled and self.board.hexTileDict[adjacentHex].robber == False): #This player gets a resource if hex is adjacent and no robber
                             resourceGenerated = self.board.hexTileDict[adjacentHex].resource.type
                             player_i.resources[resourceGenerated] += 2
-                            print("{} collects 2 {} from City".format(player_i.name, resourceGenerated))
+                            #print("{} collects 2 {} from City".format(player_i.name, resourceGenerated))
 
-                print("Player:{}, Resources:{}, Points: {}".format(player_i.name, player_i.resources, player_i.victoryPoints))
+                #print("Player:{}, Resources:{}, Points: {}".format(player_i.name, player_i.resources, player_i.victoryPoints))
                 #print('Dev Cards:{}'.format(player_i.devCards))
                 #print("RoadsLeft:{}, SettlementsLeft:{}, CitiesLeft:{}".format(player_i.roadsLeft, player_i.settlementsLeft, player_i.citiesLeft))
-                print('MaxRoadLength:{}, Longest Road:{}\n'.format(player_i.maxRoadLength, player_i.longestRoadFlag))
+                #print('MaxRoadLength:{}, Longest Road:{}\n'.format(player_i.maxRoadLength, player_i.longestRoadFlag))
         
         else:
-            print("AI using heuristic robber...")
+            #print("AI using heuristic robber...")
             currentPlayer.heuristic_move_robber(self.board)
 
 
@@ -134,7 +94,7 @@ class catanAIGame():
                 player_i.longestRoadFlag = True
                 player_i.victoryPoints += 2
 
-                print("Player {} takes Longest Road {}".format(player_i.name, prevPlayer))
+                #print("Player {} takes Longest Road {}".format(player_i.name, prevPlayer))
 
     #function to check if a player has the largest army - after playing latest knight
     def check_largest_army(self, player_i):
@@ -156,7 +116,7 @@ class catanAIGame():
                 player_i.largestArmyFlag = True
                 player_i.victoryPoints += 2
 
-                print("Player {} takes Largest Army {}".format(player_i.name, prevPlayer))
+                #print("Player {} takes Largest Army {}".format(player_i.name, prevPlayer))
 
 
     #Wrapper function to control all trading
@@ -199,9 +159,11 @@ class catanAIGame():
     #Function that runs the main game loop with all players and pieces
     def playCatan(self):
         #self.board.displayBoard() #Display updated board
+        print("--------------RUNNING SIMULATION-----------------")
         while (self.gameOver == False):
             #Loop for each player's turn -> iterate through the player queue
             for currPlayer in self.playerQueue.queue:
+                print("AI Player {} playing...".format(currPlayer.name))
                 turnOver = False #boolean to keep track of turn
                 diceRolled = False  #Boolean for dice roll status
                 
@@ -221,7 +183,7 @@ class catanAIGame():
                     #Check if AI player gets longest road and update Victory points
                     self.check_longest_road(currPlayer)
                     
-                    self.boardView.displayGameScreen()#Update back to original gamescreen
+                    #self.boardView.displayGameScreen()#Update back to original gamescreen
                     pygame.time.delay(300)
                     turnOver = True
                     
@@ -240,5 +202,4 @@ class catanAIGame():
                         runTime = pygame.time.get_ticks() - startTime
 
                     break
-        return self.result
                                    
