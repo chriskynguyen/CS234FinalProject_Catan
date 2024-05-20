@@ -184,7 +184,7 @@ class catanGameView():
         self.displayRobber()
 
         #Loop through and display all existing buildings from players build graphs
-        for player_i in list(self.game.playerQueue.queue): #Build Settlements and roads of each player
+        for player_i in list(self.game.playerQueue): #Build Settlements and roads of each player
             for existingRoad in player_i.buildGraph['ROADS']:
                 self.draw_road(existingRoad, player_i.color)
             

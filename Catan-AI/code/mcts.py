@@ -2,12 +2,10 @@
 # Monte Carlo Tree Search class for AI players
 
 from board import *
-from simulation import catanAIGame
+import simulation 
 from player import *
 from heuristicAIPlayer import *
 import math
-import random
-from collections import defaultdict
 import copy
 
 class Node:
@@ -27,8 +25,6 @@ class Node:
         # visit count
         self.visits = 0
 
-        #self.uct = 0
-
         # action tuple
         self.action = action
 
@@ -37,10 +33,10 @@ class MCTS:
     """
     Monte-Carlo Tree Search. Create tree then choose best move(s) for current turn
     """
-    def __init__(self, state, exploration_param=1):
-        self.root_node = Node(state=state, action=()) # state is dict {'board' = board, 'current_player' = ai_player, 'queue' = playerQueue}
+    def __init__(self, state, queue, exploration_param=1):
+        self.root_node = Node(state=state, action=()) # state is dict {'board' = board, 'current_player' = ai_player}
+        self.queue = queue
         self.exploration_param = exploration_param
-        
 
     def calcUCT(self, node):
         """
@@ -51,10 +47,11 @@ class MCTS:
 
         return node.value/node.visits + self.exploration_param*math.sqrt(math.log(node.parent.visits) / node.visits)
 
-    def selection(self, node):
+    def selection(self):
         """
         Select node with highest UCB for expansion
         """
+        node = self.root_node
         while node.children:
             best_value = float('-inf')
             best_child = None
@@ -67,6 +64,7 @@ class MCTS:
         return node
             
     # helper to generate all legal actions from a state
+    # every legal action contains end_turn
     def get_legal_actions(self, state):
 
         board = state['board']
@@ -90,7 +88,7 @@ class MCTS:
         # Add road actions
         for road, length in potential_roads.items():
             if num_bricks >= length and num_wood >= length:
-                print('Possible road of length ' + str(length) + ' at ' + str(road[0]) + ' to ' + str(road[1]))
+                #print('Possible road of length ' + str(length) + ' at ' + str(road[0]) + ' to ' + str(road[1]))
                 actions.append(('build_road', road[0], road[1], length))
 
         # Add settlement building actions
@@ -138,17 +136,20 @@ class MCTS:
 
         # adding "end turn" action
         actions.append(('end_turn', ))
-
         return actions
         
     # helper to apply an action and return the new state
     def apply_action(self, state, action):
         # create copy of the state
-        new_state = state.copy()
-        #new_state = copy.deepcopy(state)
+        new_state = {}
+       
+        new_state['board'] = state['board'].custom_copy()  
+        new_state['current_player'] = copy.deepcopy(state['current_player']) 
+
         board = new_state['board']
         player = new_state['current_player']
-
+        #print("Original player resources before action:", state['current_player'].resources) #DEBUG
+        #print("New player resources before action:", player.resources) #DEBUG
         # Apply an action
         # action is a tuple with ('action', info ....)
         action_type = action[0]
@@ -157,6 +158,7 @@ class MCTS:
         if action_type == 'build_road':
             _, v1, v2, length = action
             for _ in range(length):
+                # FIXED TODO: resources are taken when buliding the road and gives insufficient resources for each subsequent "build_road"
                 player.build_road(v1, v2, board)
                 v1, v2 = v2, v1
                 
@@ -184,7 +186,8 @@ class MCTS:
         elif action_type == 'end_turn':
             #player.end_turn()
             pass
-
+        #print("Original player resources after action:", state['current_player'].resources) #DEBUG
+        #print("New player resources after action:", player.resources) #DEBUG
         # update player in new_state
         new_state['current_player'] = player
 
@@ -206,7 +209,7 @@ class MCTS:
 
         return True
 
-
+    #TODO: during expansion, make copies of the state
     def expansion(self, node):
         """
         Expand node with new child node
@@ -229,14 +232,19 @@ class MCTS:
                 child_node.parent = node
                 # add child node
                 node.children.append(child_node)
+        #if node == self.root_node:
+        #    print(len(self.root_node.children)) #DEBUG: check if root_node has children
     
-
+    #TODO: only fully simulates for the first node not other nodes
     def simulation(self, node):
         """
         Simulate game for the given child node
         Result: Win(+1) and Lose(-1) 
         """
-        simulate = catanAIGame(node.gameState)
+        print(node.action[0]) #DEBUG
+        print("--------------RUNNING SIMULATION-----------------")
+        simulate = simulation.catanAISimGame(state=node.gameState, queue=self.queue, sim_print=True) #DEBUG sim_print=False, for actual sim_print=True
+        print("--------------END OF SIMULATION-----------------")
         result = simulate.get_result()
         return result
 
@@ -253,25 +261,38 @@ class MCTS:
 
     def bestMove(self, iterations=100):
         """
-        Select next best move for current node and return best move node
+        Select next best move for current node and return best move node.
+        Always contains 'end_turn' move
+
+        Note: Try pruning branches that show no improvement. Can help reduce runtime
         """
         for i in range(iterations):
-            print("HERE")
             # select node with best UCT
-            best_node = self.selection(self.root_node)
+            best_node = self.selection()
             # expand node
             self.expansion(best_node)
+            # TODO: add a check to see if best_node has only 1 legal action ("end_turn"), not worth time to simulate
+            # Maybe add a check if this is 1st iteration so we don't have to continually simulate end turn
+            if i==0 and len(best_node.children) == 1 and best_node.children[0].action[0] == 'end_turn':
+                break
+            # TODO THOUGHT: does it make sense to simulate a node that has only one child node with action 'end_turn'
             # simulate
             for child in best_node.children:
                 #simulate
+                print("Original player resources before sim:", self.root_node.gameState['current_player'].resources) #DEBUG
+                print("New player resources before sim:", child.gameState['current_player'].resources) #DEBUG: player resources inside sim match original not new player
                 result = self.simulation(child)
+                print("Original player resources after sim:", self.root_node.gameState['current_player'].resources) #DEBUG
+                print("New player resources after sim:", child.gameState['current_player'].resources) #DEBUG
                 #backpropagate
                 self.backpropagation(child, result)
 
             #result = self.simulation(best_node.children[])
             # backpropagate
             #self.backpropagation(best_node, result)
-
+        if len(self.root_node.children) == 1 and self.root_node.children[0].action[0] == 'end_turn':
+            return self.root_node.children[0].action
+        
         # find child with most visits
         max_visits = max([child.visits for child in self.root_node.children])
         for child in self.root_node.children:
