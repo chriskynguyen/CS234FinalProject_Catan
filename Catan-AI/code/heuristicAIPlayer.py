@@ -5,6 +5,7 @@ from board import *
 from player import *
 import numpy as np
 from mcts import *
+import copy
 
 #Class definition for an AI player
 class heuristicAIPlayer(player):
@@ -68,8 +69,9 @@ class heuristicAIPlayer(player):
     def run_action(self, action, board):
         action_type = action[0]
         if action_type == 'build_road':
-            _, v1, v2 = action
-            self.build_road(v1, v2, board)
+            _, v1, v2, length = action
+            for _ in range(length):
+                self.build_road(v1, v2, board)
             
         elif action_type == 'build_settlement':
             _, v = action
@@ -90,12 +92,15 @@ class heuristicAIPlayer(player):
     def move(self, board, queue): #TODO: create MCTS instance and call bestMove()
         print("AI Player {} playing...".format(self.name))
         
-        #TODO: run MCTS
+        #TODO: create a copy of the board and player information
         for _ in range(5): # arbitrary range for now, depends on resources
-            state = {'board': board, 'current_player': self, 'queue': queue}
+            copy_board = board.custom_copy()
+            copy_player = copy.deepcopy(self)
+            state = {'board': copy_board, 'current_player': copy_player}
             print("Calling MCTS")
-            tree = MCTS(state, self.exploration_param)
-            action = tree.bestMove() # tuple ('action', info, ...)
+            tree = MCTS(state, queue, self.exploration_param)
+            action = tree.bestMove(iterations=30) # tuple ('action', info, ...)
+            print("Got best move: ", action[0])
             if action[0] == 'end_turn':
                 break
             self.run_action(action, board)
@@ -151,7 +156,7 @@ class heuristicAIPlayer(player):
         return hexToRob_index, playerToRob_hex
 
 
-    def heuristic_move_robber(self, board):
+    def heuristic_move_robber(self, board, sim=False):
         '''Function to control heuristic AI robber
         Calls the choose_player_to_rob and move_robber functions
         args: board object
@@ -160,7 +165,7 @@ class heuristicAIPlayer(player):
         hex_i, playerRobbed = self.choose_player_to_rob(board)
 
         #Move the robber
-        self.move_robber(hex_i, board, playerRobbed)
+        self.move_robber(hex_i, board, playerRobbed, sim)
 
         return
 

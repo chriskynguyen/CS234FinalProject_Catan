@@ -46,7 +46,7 @@ class player():
 
 
     #function to build a road from vertex v1 to vertex v2
-    def build_road(self, v1, v2, board):
+    def build_road(self, v1, v2, board, sim=False):
         'Update buildGraph to add a road on edge v1 - v2'
 
         if(self.resources['BRICK'] > 0 and self.resources['WOOD'] > 0): #Check if player has resources available
@@ -63,18 +63,20 @@ class player():
                 #Calculate current max road length and update
                 maxRoads = self.get_road_length(board)
                 self.maxRoadLength = maxRoads
-
-                print('{} Built a Road. MaxRoadLength: {}'.format(self.name, self.maxRoadLength))
+                if not sim:
+                    print('{} Built a Road. MaxRoadLength: {}'.format(self.name, self.maxRoadLength))
 
             else:
-                print("No roads available to build")
+                if not sim:
+                    print("No roads available to build")
 
         else:
-            print("Insufficient Resources to Build Road - Need 1 BRICK, 1 WOOD")
+            if not sim:
+                print("Insufficient Resources to Build Road - Need 1 BRICK, 1 WOOD")
 
 
     #function to build a settlement on vertex with coordinates vCoord
-    def build_settlement(self, vCoord, board):
+    def build_settlement(self, vCoord, board, sim=False):
         'Update player buildGraph and boardgraph to add a settlement on vertex v'
         #Take input from Player on where to build settlement
             #Check if player has correct resources
@@ -93,22 +95,25 @@ class player():
                 
                 self.victoryPoints += 1
                 board.updateBoardGraph_settlement(vCoord, self) #update the overall boardGraph
-
-                print('{} Built a Settlement'.format(self.name))
+                if not sim:
+                    print('{} Built a Settlement'.format(self.name))
                 
                  #Add port to players port list if it is a new port
                 if((board.boardGraph[vCoord].port != False) and (board.boardGraph[vCoord].port not in self.portList)):
                     self.portList.append(board.boardGraph[vCoord].port)
-                    print("{} now has {} Port access".format(self.name, board.boardGraph[vCoord].port))
+                    if not sim:
+                        print("{} now has {} Port access".format(self.name, board.boardGraph[vCoord].port))
 
             else:
-                print("No settlements available to build")
+                if not sim:
+                    print("No settlements available to build")
   
         else:
-            print("Insufficient Resources to Build Settlement. Build Cost: 1 BRICK, 1 WOOD, 1 WHEAT, 1 SHEEP")
+            if not sim:
+                print("Insufficient Resources to Build Settlement. Build Cost: 1 BRICK, 1 WOOD, 1 WHEAT, 1 SHEEP")
 
     #function to build a city on vertex v
-    def build_city(self, vCoord, board):
+    def build_city(self, vCoord, board, sim=False):
         'Upgrade existing settlement to city in buildGraph'
         if(self.resources['WHEAT'] >= 2 and self.resources['ORE'] >= 3): #Check if player has resources available
             if(self.citiesLeft > 0):
@@ -122,29 +127,33 @@ class player():
                 self.victoryPoints += 1
 
                 board.updateBoardGraph_city(vCoord, self) #update the overall boardGraph
-                print('{} Built a City'.format(self.name))
+                if not sim:
+                    print('{} Built a City'.format(self.name))
 
             else:
-                print("No cities available to build")
+                if not sim:
+                    print("No cities available to build")
 
         else:
-            print("Insufficient Resources to Build City. Build Cost: 3 ORE, 2 WHEAT")
+            if not sim:
+                print("Insufficient Resources to Build City. Build Cost: 3 ORE, 2 WHEAT")
     
     #function to move robber to a specific hex and steal from a player
-    def move_robber(self, hexIndex, board, player_robbed):
+    def move_robber(self, hexIndex, board, player_robbed, sim=False):
         'Update boardGraph with Robber and steal resource'
         board.updateBoardGraph_robber(hexIndex)
         
         #Steal a random resource from other players
-        self.steal_resource(player_robbed)
+        self.steal_resource(player_robbed, sim)
 
         return
 
 
     #Function to steal a random resource from player_2
-    def steal_resource(self, player_2):
+    def steal_resource(self, player_2, sim):
         if(player_2 == None):
-            print("No Player on this hex to Rob")
+            if not sim:
+                print("No Player on this hex to Rob")
             return
         
         #Get all resources player 2 has in a list and use random list index to steal
@@ -161,7 +170,8 @@ class player():
         #Update resources of both players
         player_2.resources[resourceStolen] -= 1
         self.resources[resourceStolen] += 1
-        print("Stole 1 {} from Player {}".format(resourceStolen, player_2.name))
+        if not sim:
+            print("Stole 1 {} from Player {}".format(resourceStolen, player_2.name))
 
         return
 
@@ -250,7 +260,7 @@ class player():
         'Pass turn to next player and update game state'
 
     #function to draw a Development Card
-    def draw_devCard(self, board):
+    def draw_devCard(self, board, sim=False):
         'Draw a random dev card from stack and update self.devcards'
         if(self.resources['WHEAT'] >= 1 and self.resources['ORE'] >= 1 and self.resources['SHEEP'] >= 1): #Check if player has resources available
             #Get alldev cards available
@@ -260,7 +270,8 @@ class player():
 
             #IF there are no devCards left
             if(devCardsToDraw == []):
-                print("No Dev Cards Left!")
+                if not sim:
+                    print("No Dev Cards Left!")
                 return
 
             devCardIndex = np.random.randint(0, len(devCardsToDraw))
@@ -284,11 +295,12 @@ class player():
             else:#Update player dev card and the stack
                 self.newDevCards.append(cardDrawn)
                 board.devCardStack[cardDrawn] -= 1
-            
-            print("{} drew a {} from Development Card Stack".format(self.name, cardDrawn))
+            if not sim:
+                print("{} drew a {} from Development Card Stack".format(self.name, cardDrawn))
 
         else:
-            print("Insufficient Resources for Dev Card. Cost: 1 ORE, 1 WHEAT, 1 SHEEP")
+            if not sim:
+                print("Insufficient Resources for Dev Card. Cost: 1 ORE, 1 WHEAT, 1 SHEEP")
 
     #Function to update dev card stack with dev cards drawn from prior turn
     def updateDevCards(self):
@@ -367,7 +379,7 @@ class player():
                 resourceToMonopolize = input("Enter resource name to monopolise: ").upper()
 
             #Loop over each player to Monopolize all resources
-            for player in list(game.playerQueue.queue):
+            for player in list(game.playerQueue):
                 if(player != self):
                     numLost = player.resources[resourceToMonopolize]
                     player.resources[resourceToMonopolize] = 0
@@ -377,7 +389,7 @@ class player():
 
 
     #Function to basic trade 4:1 with bank, or use ports to trade
-    def trade_with_bank(self, r1, r2):
+    def trade_with_bank(self, r1, r2, sim=False):
         '''Function to implement trading with bank
         r1: resource player wants to trade away
         r2: resource player wants to receive
@@ -388,25 +400,29 @@ class player():
         if(r1_port in self.portList and self.resources[r1] >= 2): #Can use 2:1 port with r1
             self.resources[r1] -= 2
             self.resources[r2] += 1
-            print("Traded 2 {} for 1 {} using {} Port".format(r1, r2, r1))
+            if not sim:
+                print("Traded 2 {} for 1 {} using {} Port".format(r1, r2, r1))
             return
 
         #Check for 3:1 Port
         elif('3:1 PORT' in self.portList and self.resources[r1] >= 3):
             self.resources[r1] -= 3
             self.resources[r2] += 1
-            print("Traded 3 {} for 1 {} using 3:1 Port".format(r1, r2))
+            if not sim:
+                print("Traded 3 {} for 1 {} using 3:1 Port".format(r1, r2))
             return
 
         #Check 4:1 port
         elif(self.resources[r1] >= 4):
             self.resources[r1] -= 4
             self.resources[r2] += 1
-            print("Traded 4 {} for 1 {}".format(r1, r2))
+            if not sim:
+                print("Traded 4 {} for 1 {}".format(r1, r2))
             return
         
         else:
-            print("Insufficient resource {} to trade with Bank".format(r1))
+            if not sim:
+                print("Insufficient resource {} to trade with Bank".format(r1))
             return
 
 
@@ -440,7 +456,7 @@ class player():
 
         elif trade_type == 'PLAYER':
             #Select player to trade with - generate list of other players
-            playerNames = [p.name for p in list(game.playerQueue.queue)]
+            playerNames = [p.name for p in list(game.playerQueue)]
 
             print("\nInter-Player Trading Menu - Player Names:", playerNames)
             print("Resource List:", resource_list)
@@ -452,7 +468,7 @@ class player():
 
             #Over write and store the target player object
             playerToTrade = None
-            for player in list(game.playerQueue.queue):
+            for player in list(game.playerQueue):
                 if player.name == playerToTrade_name:
                     playerToTrade = player
             

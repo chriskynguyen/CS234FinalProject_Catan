@@ -5,7 +5,8 @@ from board import *
 from gameView import *
 from player import *
 from heuristicAIPlayer import *
-import queue
+#import queue 
+from collections import deque
 import numpy as np
 import sys, pygame
 import matplotlib.pyplot as plt
@@ -16,28 +17,29 @@ class catanAIGame():
     #Create new gameboard
     def __init__(self):
         print("Initializing Settlers of Catan with only AI Players...")
-        self.board = catanBoard()
+        self.board = catanBoard(is_copy=False) # add copy functionality to board
 
         #Game State variables
         self.gameOver = False
         self.maxPoints = 10
-        self.numPlayers = 0
+        self.numPlayers = 2
 
         #Dictionary to keep track of dice statistics
         self.diceStats = {2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0}
         self.diceStats_list = []
-
-        while(self.numPlayers not in [3,4]): #Only accept 3 and 4 player games
+        """
+        while(self.numPlayers not in [2]): #[3,4] Only accept 3 and 4 player games (original)
             try:
-                self.numPlayers = int(input("Enter Number of Players (3 or 4):"))
+                self.numPlayers = int(input("Enter Number of Players (2):"))
             except:
                 print("Please input a valid number")
-
+        """
         print("Initializing game with {} players...".format(self.numPlayers))
-        print("Note that Player 1 goes first, Player 2 second and so forth.")
+        #print("Note that Player 1 goes first, Player 2 second and so forth.")
         
         #Initialize blank player queue and initial set up of roads + settlements
-        self.playerQueue = queue.Queue(self.numPlayers)
+        #self.playerQueue = queue.Queue(self.numPlayers)
+        self.playerQueue = deque()
         self.gameSetup = True #Boolean to take care of setup phase
 
         #Initialize boardview object
@@ -64,9 +66,10 @@ class catanAIGame():
             exploration_param = input("Choose exploration parameter: ".format(i+1))
             newPlayer = heuristicAIPlayer(playerNameInput, usePPO, exploration_param, playerColors[i])
             newPlayer.updateAI()
-            self.playerQueue.put(newPlayer)
+            #self.playerQueue.put(newPlayer)
+            self.playerQueue.append(newPlayer)
 
-        playerList = list(self.playerQueue.queue)
+        playerList = list(self.playerQueue)
 
         #Build Settlements and roads of each player forwards
         for player_i in playerList: 
@@ -115,7 +118,7 @@ class catanAIGame():
             #print('Resources rolled this turn:', hexResourcesRolled)
 
             #Check for each player
-            for player_i in list(self.playerQueue.queue):
+            for player_i in list(self.playerQueue):
                 #Check each settlement the player has
                 for settlementCoord in player_i.buildGraph['SETTLEMENTS']:
                     for adjacentHex in self.board.boardGraph[settlementCoord].adjacentHexList: #check each adjacent hex to a settlement
@@ -146,14 +149,14 @@ class catanAIGame():
     def check_longest_road(self, player_i):
         if(player_i.maxRoadLength >= 5): #Only eligible if road length is at least 5
             longestRoad = True
-            for p in list(self.playerQueue.queue):
+            for p in list(self.playerQueue):
                 if(p.maxRoadLength >= player_i.maxRoadLength and p != player_i): #Check if any other players have a longer road
                     longestRoad = False
             
             if(longestRoad and player_i.longestRoadFlag == False): #if player_i takes longest road and didn't already have longest road
                 #Set previous players flag to false and give player_i the longest road points
                 prevPlayer = ''
-                for p in list(self.playerQueue.queue):
+                for p in list(self.playerQueue):
                     if(p.longestRoadFlag):
                         p.longestRoadFlag = False
                         p.victoryPoints -= 2
@@ -168,14 +171,14 @@ class catanAIGame():
     def check_largest_army(self, player_i):
         if(player_i.knightsPlayed >= 3): #Only eligible if at least 3 knights are player
             largestArmy = True
-            for p in list(self.playerQueue.queue):
+            for p in list(self.playerQueue):
                 if(p.knightsPlayed >= player_i.knightsPlayed and p != player_i): #Check if any other players have more knights played
                     largestArmy = False
             
             if(largestArmy and player_i.largestArmyFlag == False): #if player_i takes largest army and didn't already have it
                 #Set previous players flag to false and give player_i the largest points
                 prevPlayer = ''
-                for p in list(self.playerQueue.queue):
+                for p in list(self.playerQueue):
                     if(p.largestArmyFlag):
                         p.largestArmyFlag = False
                         p.victoryPoints -= 2
@@ -194,7 +197,7 @@ class catanAIGame():
         numTurns = 0
         while (self.gameOver == False):
             #Loop for each player's turn -> iterate through the player queue
-            for currPlayer in self.playerQueue.queue:
+            for currPlayer in self.playerQueue:
                 numTurns += 1
                 print("---------------------------------------------------------------------------")
                 print("Current Player:", currPlayer.name)
@@ -220,12 +223,9 @@ class catanAIGame():
                     self.diceStats[diceNum] += 1
                     self.diceStats_list.append(diceNum)
 
-                    copyQueue = queue.Queue(self.numPlayers) #TODO: fix queue
-                    for _ in range(self.numPlayers):
-                        ai_player = self.playerQueue.get()
-                        copyQueue.put(ai_player)
-                        self.playerQueue.put(ai_player)
-
+                    # copy queue for simulation
+                    copyQueue = deque(copy.deepcopy(list(self.playerQueue))) #TODO: fix queue   
+                    
                     currPlayer.move(self.board, copyQueue) #AI Player makes all its moves
                     #Check if AI player gets longest road and update Victory points
                     self.check_longest_road(currPlayer)
@@ -240,7 +240,7 @@ class catanAIGame():
                         self.gameOver = True
                         self.turnOver = True
                         print("====================================================")
-                        print("PLAYER {} WINS IN {} TURNS!".format(currPlayer.name, int(numTurns/4)))
+                        print("PLAYER {} WINS IN {} TURNS!".format(currPlayer.name, int(numTurns/self.numPlayers)))
                         print(self.diceStats)
                         print("Exiting game in 10 seconds...")
                         pygame.time.delay(10000)

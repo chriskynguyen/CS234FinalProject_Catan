@@ -6,6 +6,7 @@ import numpy as np
 from hexTile import *
 from hexLib import *
 from player import *
+import copy
 #import networkx as nx
 #import matplotlib.pyplot as plt
 import pygame
@@ -17,7 +18,7 @@ pygame.init()
 class catanBoard(hexTile, Vertex):
     'Class Definition for Catan Board Logic'
     #Object Creation - creates a random board configuration with hexTiles
-    def __init__(self):
+    def __init__(self, is_copy=False):
         self.hexTileDict = {} #Dict to store all hextiles, with hexIndex as key
         self.vertex_index_to_pixel_dict = {} #Dict to store the Vertices coordinates with vertex indices as keys
         self.boardGraph = {} #Dict to store the vertex objects with the pixelCoordinates as keys
@@ -27,7 +28,8 @@ class catanBoard(hexTile, Vertex):
         self.flat = Layout(layout_flat, Point(self.edgeLength, self.edgeLength), Point(self.width/2, self.height/2)) #specify Layout
 
         ##INITIALIZE BOARD##
-        print("Initializing Catan Game Board...")
+        if not is_copy:
+            print("Initializing Catan Game Board...")
         self.resourcesList = self.getRandomResourceList() #Assign resources numbers randomly
 
         #Get a random permutation of indices 0-18 to use with the resource list
@@ -39,7 +41,8 @@ class catanBoard(hexTile, Vertex):
             reinitializeCount += 1
             randomIndices = np.random.permutation([i for i in range(len(self.resourcesList))])
 
-        print("Re-initialized random board {} times".format(reinitializeCount))
+        if not is_copy:
+            print("Re-initialized random board {} times".format(reinitializeCount))
         
         hexIndex_i = 0 #initialize hexIndex at 0
         #Neighbors are specified in adjacency matrix - hard coded
@@ -68,6 +71,21 @@ class catanBoard(hexTile, Vertex):
 
         return None
 
+    # Function to create a copy of the board
+    def custom_copy(self):
+        copied_board = catanBoard(is_copy=True)  # Create a new instance of catanBoard
+
+        # Deep copy or recreate attributes from the original board to the copied board
+        copied_board.hexTileDict = copy.deepcopy(self.hexTileDict)
+        copied_board.vertex_index_to_pixel_dict = copy.deepcopy(self.vertex_index_to_pixel_dict)
+        copied_board.boardGraph = copy.deepcopy(self.boardGraph)
+        copied_board.edgeLength = self.edgeLength
+        copied_board.size = self.size
+        copied_board.flat = self.flat
+        copied_board.resourcesList = copy.deepcopy(self.resourcesList)  
+        copied_board.devCardStack = copy.deepcopy(self.devCardStack)  
+
+        return copied_board
 
     def getHexCoords(self, hexInd):
         #Dictionary to store Axial Coordinates (q, r) by hexIndex
