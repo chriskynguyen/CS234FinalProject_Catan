@@ -70,8 +70,7 @@ class heuristicAIPlayer(player):
         action_type = action[0]
         if action_type == 'build_road':
             _, v1, v2, length = action
-            for _ in range(length):
-                self.build_road(v1, v2, board)
+            self.build_road(v1, v2, board)
             
         elif action_type == 'build_settlement':
             _, v = action
@@ -84,23 +83,23 @@ class heuristicAIPlayer(player):
         elif action_type == 'draw_devCard':
             self.draw_devCard(board)
             
-        elif action_type == 'trade_with_bank' or action_type == 'trade_with_bank_3:1' or action_type == 'trade_with_bank_2:1':
+        elif action_type in ['trade_with_bank', 'trade_with_bank_3:1', 'trade_with_bank_2:1']:
             _, resource1, resource2 = action
             self.trade_with_bank(resource1, resource2)
 
 
-    def move(self, board, queue): #TODO: create MCTS instance and call bestMove()
+    def move(self, board, queue): # Adding limit of 10 moves to avoid infinite loops
         print("AI Player {} playing...".format(self.name))
         
-        #TODO: create a copy of the board and player information
-        for _ in range(5): # arbitrary range for now, depends on resources
-            copy_board = board.custom_copy()
-            copy_player = copy.deepcopy(self)
-            state = {'board': copy_board, 'current_player': copy_player}
+        for _ in range(10): 
+            #copy_board = board.custom_copy()
+            #copy_player = copy.deepcopy(self)
+            #state = {'board': copy_board, 'current_player': copy_player, 'queue': queue}
+            state = {'board': board, 'current_player': self, 'queue': queue}
             print("Calling MCTS")
-            tree = MCTS(state, queue, self.exploration_param)
+            tree = MCTS(state, self.exploration_param)
             action = tree.bestMove(iterations=30) # tuple ('action', info, ...)
-            print("Got best move: ", action[0])
+            print(f"Best action determined: {action[0]}")
             if action[0] == 'end_turn':
                 break
             self.run_action(action, board)
@@ -125,9 +124,13 @@ class heuristicAIPlayer(player):
         '''
         #Get list of robber spots
         robberHexDict = board.get_robber_spots()
-        
+
+         # Initialize variables
+        hexToRob_index = None
+        playerToRob_hex = None
+        maxHexScore = float('-inf')  # Use negative infinity to ensure any score will be higher
+
         #Choose a hexTile with maximum adversary settlements
-        maxHexScore = 0 #Keep only the best hex to rob
         for hex_ind, hexTile in robberHexDict.items():
             #Extract all 6 vertices of this hexTile
             vertexList = polygon_corners(board.flat, hexTile.hex)
@@ -139,7 +142,7 @@ class heuristicAIPlayer(player):
                 playerAtVertex = board.boardGraph[vertex].state['Player']
                 if playerAtVertex == self:
                     hexScore -= self.victoryPoints
-                elif playerAtVertex != None: #There is an adversary on this vertex
+                elif playerAtVertex is not None: #There is an adversary on this vertex
                     hexScore += playerAtVertex.visibleVictoryPoints
                     #Find strongest other player at this hex, provided player has resources
                     if playerAtVertex.visibleVictoryPoints >= playerToRob_VP and sum(playerAtVertex.resources.values()) > 0:
@@ -147,12 +150,18 @@ class heuristicAIPlayer(player):
                         playerToRob = playerAtVertex
                 else:
                     pass
-
-            if hexScore >= maxHexScore and playerToRob != None:
+            
+            if hexScore >= maxHexScore and playerToRob is not None:
                 hexToRob_index = hex_ind
                 playerToRob_hex = playerToRob
                 maxHexScore = hexScore
 
+        # If no valid hex is found, choose the first available hex to rob (default behavior)
+        if hexToRob_index is None:
+
+            hexToRob_index = list(robberHexDict.keys())[0]
+
+            playerToRob_hex = None
         return hexToRob_index, playerToRob_hex
 
 

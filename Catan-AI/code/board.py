@@ -82,8 +82,11 @@ class catanBoard(hexTile, Vertex):
         copied_board.edgeLength = self.edgeLength
         copied_board.size = self.size
         copied_board.flat = self.flat
+        copied_board.width = self.width
+        copied_board.height = self.height
         copied_board.resourcesList = copy.deepcopy(self.resourcesList)  
         copied_board.devCardStack = copy.deepcopy(self.devCardStack)  
+        copied_board.vertexIndexCount = self.vertexIndexCount
 
         return copied_board
 

@@ -22,20 +22,20 @@ class catanAIGame():
         #Game State variables
         self.gameOver = False
         self.maxPoints = 10
-        self.numPlayers = 2
+        self.numPlayers = 0 # Tested with 2
 
         #Dictionary to keep track of dice statistics
         self.diceStats = {2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0}
         self.diceStats_list = []
-        """
-        while(self.numPlayers not in [2]): #[3,4] Only accept 3 and 4 player games (original)
+        
+        while(self.numPlayers not in [2,3]): # Only accept 2 and 3 player games, testing with 2
             try:
-                self.numPlayers = int(input("Enter Number of Players (2):"))
+                self.numPlayers = int(input("Enter Number of Players (2 or 3):"))
             except:
                 print("Please input a valid number")
-        """
+        
         print("Initializing game with {} players...".format(self.numPlayers))
-        #print("Note that Player 1 goes first, Player 2 second and so forth.")
+        print("Note that Player 1 goes first, Player 2 second and so forth.")
         
         #Initialize blank player queue and initial set up of roads + settlements
         #self.playerQueue = queue.Queue(self.numPlayers)

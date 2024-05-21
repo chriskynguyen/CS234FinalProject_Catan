@@ -33,9 +33,8 @@ class MCTS:
     """
     Monte-Carlo Tree Search. Create tree then choose best move(s) for current turn
     """
-    def __init__(self, state, queue, exploration_param=1):
-        self.root_node = Node(state=state, action=()) # state is dict {'board' = board, 'current_player' = ai_player}
-        self.queue = queue
+    def __init__(self, state, exploration_param=1):
+        self.root_node = Node(state=state, action=()) # state is dict {'board' = board, 'current_player' = ai_player, 'queue' = playerQueue}
         self.exploration_param = exploration_param
 
     def calcUCT(self, node):
@@ -74,7 +73,7 @@ class MCTS:
 
         # Get potential actions just based on state (not including resources)
         potential_roads = board.get_potential_roads(player)
-        potential_settlements  = board.get_potential_settlements(player)
+        potential_settlements = board.get_potential_settlements(player)
         potential_cities = board.get_potential_cities(player)
 
         # get resource counts
@@ -94,16 +93,19 @@ class MCTS:
         # Add settlement building actions
         if num_bricks >= 1 and num_wood >= 1 and num_sheep >= 1 and num_wheat >= 1:
             for settlement in potential_settlements.keys():
+                #print(f'Possible settlement at {settlement}')
                 actions.append(('build_settlement', settlement))
 
         # Add city building actions
         if num_ore >= 3 and num_wheat >= 2:
             for city in potential_cities.keys():
+                #print(f'Possible city at {city}')
                 actions.append(('build_city', city))
 
         # Draw Development Card
         if num_wheat >= 1 and num_ore >= 1 and num_sheep >= 1:
-            actions.append(('draw_devCard', ))
+            #print('Possible action: draw_devCard')
+            actions.append(('draw_devCard',))
 
         # # Play Development Card
         # for dev_card, amount in player.devCards.items():
@@ -127,7 +129,7 @@ class MCTS:
                     if resource_1 != resource_2:
                         actions.append(('trade_with_bank_3:1', resource_1, resource_2))
 
-            # Sepcific Trading Port 2:1
+            # Specific Trading Port 2:1
             specific_port = f"2:1 {resource_1}"
             if specific_port in player.portList and amount_1 >= 2:
                 for resource_2 in resource_types:
@@ -141,19 +143,24 @@ class MCTS:
     # helper to apply an action and return the new state
     def apply_action(self, state, action):
         # create copy of the state
-        new_state = {}
-       
-        new_state['board'] = state['board'].custom_copy()  
-        new_state['current_player'] = copy.deepcopy(state['current_player']) 
+        #new_state = {}
+        #new_state['board'] = state['board'].custom_copy()  
+        #new_state['current_player'] = copy.deepcopy(state['current_player']) 
+        #new_state['queue'] = copy.deepcopy(state['queue'])
+
+        new_state = {
+            'board': state['board'].custom_copy(),
+            'current_player': copy.deepcopy(state['current_player']),
+            'queue': copy.deepcopy(state['queue'])
+        }
 
         board = new_state['board']
         player = new_state['current_player']
-        #print("Original player resources before action:", state['current_player'].resources) #DEBUG
-        #print("New player resources before action:", player.resources) #DEBUG
+
         # Apply an action
         # action is a tuple with ('action', info ....)
         action_type = action[0]
-        
+        #print(f"Applying action: {action}")
         #check which action to take
         if action_type == 'build_road':
             _, v1, v2, length = action
@@ -179,7 +186,7 @@ class MCTS:
         #     _, dev_card = action
         #     player.play_devCard()
 
-        elif action_type == 'trade_with_bank' or action_type == 'trade_with_bank_3:1' or action_type == 'trade_with_bank_2:1':
+        elif action_type in ['trade_with_bank', 'trade_with_bank_3:1', 'trade_with_bank_2:1']:
             _, resource1, resource2 = action
             player.trade_with_bank(resource1, resource2)
 
@@ -224,7 +231,7 @@ class MCTS:
             
             # get all legal actions from current node
             legal_actions = self.get_legal_actions(node.gameState)
-            print("Num legal actions:" + str(len(legal_actions)))   #DEBUG PRINT
+            print(f"Num legal actions: {len(legal_actions)}")  # DEBUG PRINT
             # create new child node for each legal action
             for action in legal_actions:
                 new_state = self.apply_action(node.gameState, action)
@@ -232,8 +239,7 @@ class MCTS:
                 child_node.parent = node
                 # add child node
                 node.children.append(child_node)
-        #if node == self.root_node:
-        #    print(len(self.root_node.children)) #DEBUG: check if root_node has children
+                print(f"Added child with action: {action}")  # DEBUG PRINT
     
     #TODO: only fully simulates for the first node not other nodes
     def simulation(self, node):
@@ -241,10 +247,10 @@ class MCTS:
         Simulate game for the given child node
         Result: Win(+1) and Lose(-1) 
         """
-        print(node.action[0]) #DEBUG
-        print("--------------RUNNING SIMULATION-----------------")
-        simulate = simulation.catanAISimGame(state=node.gameState, queue=self.queue, sim_print=True) #DEBUG sim_print=False, for actual sim_print=True
-        print("--------------END OF SIMULATION-----------------")
+        #print("VP before sim: ", node.gameState['current_player'].victoryPoints) #DEBUG PRINT
+        simulate = simulation.catanAISimGame(state=node.gameState, sim_print=True) #DEBUG sim_print=False, for actual sim_print=True
+        #print("VP after sim: ", node.gameState['current_player'].victoryPoints)#DEBUG PRINT
+        
         result = simulate.get_result()
         return result
 
@@ -279,19 +285,13 @@ class MCTS:
             # simulate
             for child in best_node.children:
                 #simulate
-                print("Original player resources before sim:", self.root_node.gameState['current_player'].resources) #DEBUG
-                print("New player resources before sim:", child.gameState['current_player'].resources) #DEBUG: player resources inside sim match original not new player
                 result = self.simulation(child)
-                print("Original player resources after sim:", self.root_node.gameState['current_player'].resources) #DEBUG
-                print("New player resources after sim:", child.gameState['current_player'].resources) #DEBUG
                 #backpropagate
                 self.backpropagation(child, result)
 
             #result = self.simulation(best_node.children[])
             # backpropagate
             #self.backpropagation(best_node, result)
-        if len(self.root_node.children) == 1 and self.root_node.children[0].action[0] == 'end_turn':
-            return self.root_node.children[0].action
         
         # find child with most visits
         max_visits = max([child.visits for child in self.root_node.children])
