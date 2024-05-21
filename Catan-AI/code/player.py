@@ -3,6 +3,7 @@
 
 from board import *
 import numpy as np
+import copy
 
 #Class definition for a player
 class player():
@@ -43,6 +44,30 @@ class player():
         self.devCardPlayedThisTurn = False
 
         self.visibleVictoryPoints = self.victoryPoints - self.devCards['VP']
+
+
+            
+    # custom function to copy player object
+    def copy(self):
+        new_player = player(self.name, self.usePPO, self.exploration_param, self.color)
+        new_player.isAI = self.isAI
+        #new_player.usePPO = self.ppo
+        new_player.setupResources = copy.deepcopy(self.setupResources)
+        new_player.resources = copy.deepcopy(self.resources)
+        new_player.buildGraph = copy.deepcopy(self.buildGraph)
+        new_player.devCards = copy.deepcopy(self.devCards)
+        new_player.victoryPoints = self.victoryPoints
+        new_player.visibleVictoryPoints = self.visibleVictoryPoints
+        new_player.longestRoadFlag = self.longestRoadFlag
+        new_player.largestArmyFlag = self.largestArmyFlag
+        new_player.maxRoadLength = self.maxRoadLength
+        new_player.knightsPlayed = self.knightsPlayed
+        new_player.roadsLeft = self.roadsLeft
+        new_player.settlementsLeft = self.settlementsLeft
+        new_player.citiesLeft = self.citiesLeft
+        new_player.devCardPlayedThisTurn = self.devCardPlayedThisTurn
+        new_player.portList = copy.deepcopy(self.portList)
+        return new_player
 
 
     #function to build a road from vertex v1 to vertex v2

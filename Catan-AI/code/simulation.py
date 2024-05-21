@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 #Class to implement an only AI
 class catanAISimGame():
     #Create gameboard from current board in mcts.py
-    def __init__(self, state, queue, sim_print=True):
+    def __init__(self, state, sim_print=True):
         self.board = state["board"]
 
         #Game State variables
@@ -23,7 +23,7 @@ class catanAISimGame():
         self.player_name = state["current_player"].name
         self.result = -1
         #Initialize blank player queue and initial set up of roads + settlements
-        self.playerQueue = queue
+        self.playerQueue = state["queue"]
 
         #sim_print False means to print out information
         self.sim_print = sim_print
@@ -43,7 +43,7 @@ class catanAISimGame():
         return diceRoll
 
     #Function to update resources for all players
-    def update_playerResources(self, diceRoll, currentPlayer, sim_print):
+    def update_playerResources(self, diceRoll, currentPlayer):
         if(diceRoll != 7): #Collect resources if not a 7
             #First get the hex or hexes corresponding to diceRoll
             hexResourcesRolled = self.board.getHexResourceRolled(diceRoll)
@@ -74,7 +74,7 @@ class catanAISimGame():
         
         else:
             #print("AI using heuristic robber...")
-            currentPlayer.heuristic_move_robber(self.board, sim_print)
+            currentPlayer.heuristic_move_robber(self.board, self.sim_print)
 
 
     #function to check if a player has the longest road - after building latest road
@@ -123,48 +123,48 @@ class catanAISimGame():
 
 
     #Wrapper function to control all trading
-    def trade(self, player_i, sim_print):
+    def trade(self, player_i):
         for r1, r1_amount in player_i.resources.items():
             if(r1_amount >= 6): #heuristic to trade if a player has more than 5 of a particular resource
                 for r2, r2_amount in player_i.resources.items():
                     if(r2_amount < 1):
-                        player_i.trade_with_bank(r1, r2, sim_print)
+                        player_i.trade_with_bank(r1, r2, self.sim_print)
                         break
 
     # function to simulate moves
     # TODO: implement with PPO
-    def sim_move(self, board, player_i, sim_print):
-        self.trade(player_i, sim_print)
-        #Build a settlements, city and few roads
+    def sim_move(self, board, player_i):
+        self.trade(player_i)
+        #Build a settlements
         possibleVertices = board.get_potential_settlements(player_i)
-        if(possibleVertices != {} and (player_i.resources['BRICK'] > 0 and player_i.resources['WOOD'] > 0 and player_i.resources['SHEEP'] > 0 and player_i.resources['WHEAT'] > 0)):
+        if(possibleVertices and player_i.resources['BRICK'] > 0 and player_i.resources['WOOD'] > 0 and player_i.resources['SHEEP'] > 0 and player_i.resources['WHEAT'] > 0):
             randomVertex = np.random.randint(0, len(possibleVertices.keys()))
-            player_i.build_settlement(list(possibleVertices.keys())[randomVertex], board, sim_print)
+            player_i.build_settlement(list(possibleVertices.keys())[randomVertex], board, self.sim_print)
 
         #Build a City
         possibleVertices = board.get_potential_cities(player_i)
-        if(possibleVertices != {} and (player_i.resources['WHEAT'] >= 2 and player_i.resources['ORE'] >= 3)):
+        if(possibleVertices and player_i.resources['WHEAT'] >= 2 and player_i.resources['ORE'] >= 3):
             randomVertex = np.random.randint(0, len(possibleVertices.keys()))
-            player_i.build_city(list(possibleVertices.keys())[randomVertex], board, sim_print)
+            player_i.build_city(list(possibleVertices.keys())[randomVertex], board, self.sim_print)
 
         #Build a couple roads
         for i in range(2):
-            if(player_i.resources['BRICK'] > 0 and player_i.resources['WOOD'] > 0):
+            if player_i.resources['BRICK'] > 0 and player_i.resources['WOOD'] > 0:
                 possibleRoads = board.get_potential_roads(player_i)
-                if len(possibleRoads.keys()) > 0: # add check to see if there are no available roads
+                if possibleRoads: # add check to see if there are no available roads
                     randomEdge = np.random.randint(0, len(possibleRoads.keys()))
-                    player_i.build_road(list(possibleRoads.keys())[randomEdge][0], list(possibleRoads.keys())[randomEdge][1], board, sim_print)
+                    player_i.build_road(list(possibleRoads.keys())[randomEdge][0], list(possibleRoads.keys())[randomEdge][1], board, self.sim_print)
 
         #Draw a Dev Card with 1/3 probability
         devCardNum = np.random.randint(0, 3)
-        if(devCardNum == 0):
-            player_i.draw_devCard(board, sim_print)
+        if devCardNum == 0:
+            player_i.draw_devCard(board, self.sim_print)
 
     #Function that runs the main game loop with all players and pieces
     def playSimCatan(self):
         #self.board.displayBoard() #Display updated board
         numTurns = 0
-        while (self.gameOver == False):
+        while not self.gameOver:
             #Loop for each player's turn -> iterate through the player queue
             for currPlayer in self.playerQueue:
                 numTurns += 1
@@ -176,16 +176,16 @@ class catanAISimGame():
                 currPlayer.updateDevCards()
                 currPlayer.devCardPlayedThisTurn = False
 
-                while(turnOver == False):
+                while not turnOver:
                     #Roll Dice and update player resources and dice stats
-                    pygame.event.pump()
+                    #pygame.event.pump()
                     # Don't roll dice when entering in sim (already did dice roll in actual gameplay)
                     if numTurns != 1:
                         diceNum = self.rollDice()
-                        self.update_playerResources(diceNum, currPlayer, self.sim_print)
+                        self.update_playerResources(diceNum, currPlayer)
                     diceRolled = True
-                    print("Player:{}, Resources:{}, Points: {}".format(currPlayer.name, currPlayer.resources, currPlayer.victoryPoints)) #DEBUG
-                    self.sim_move(self.board, currPlayer, self.sim_print) #AI Player makes all its moves
+                    #print("Player:{}, Resources:{}, Points: {}".format(currPlayer.name, currPlayer.resources, currPlayer.victoryPoints)) #DEBUG
+                    self.sim_move(self.board, currPlayer) #AI Player makes all its moves
                     #Check if AI player gets longest road and update Victory points
                     self.check_longest_road(currPlayer)
                     
@@ -199,8 +199,7 @@ class catanAISimGame():
                         self.turnOver = True
                         break
 
-                if(self.gameOver):
-                    print("VP: ", currPlayer.victoryPoints) #TODO: VP is not being reset between sims
+                if self.gameOver:
                     if currPlayer.name == self.player_name:
                         self.result = 1
                     startTime = pygame.time.get_ticks()
