@@ -98,7 +98,7 @@ class heuristicAIPlayer(player):
             state = {'board': board, 'current_player': self, 'queue': queue}
             print("Calling MCTS")
             tree = MCTS(state, self.exploration_param)
-            action = tree.bestMove(iterations=30) # tuple ('action', info, ...)
+            action = tree.bestMove() # tuple ('action', info, ...)
             print(f"Best action determined: {action[0]}")
             if action[0] == 'end_turn':
                 break
@@ -225,29 +225,3 @@ class heuristicAIPlayer(player):
             resourcesNeededDict['ORE'] = 2 - self.resources['WHEAT']
 
         return resourcesNeededDict
-
-    def heuristic_discard(self):
-        '''Function for the AI to choose a set of cards to discard upon rolling a 7
-        '''
-        return
-
-    #Function to propose a trade -> give r1 and get r2
-    #Propose a trade as a dictionary with {r1:amt_1, r2: amt_2} specifying the trade
-    #def propose_trade_with_players(self):
-    
-
-    #Function to accept/reject trade - return True if accept
-    #def accept_trade(self, r1_dict, r2_dict):
-        
-
-    #Function to find best action - based on gamestate
-    def get_action(self):
-        return
-
-    #Function to execute the player's action
-    def execute_action(self):
-        return
-
-
-
-

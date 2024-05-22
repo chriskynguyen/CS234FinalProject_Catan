@@ -25,6 +25,9 @@ class Node:
         # visit count
         self.visits = 0
 
+        # action reward
+        self.action_reward = 0
+
         # action tuple
         self.action = action
 
@@ -44,7 +47,10 @@ class MCTS:
         if node.visits == 0:
             return float('inf')
 
-        return node.value/node.visits + self.exploration_param*math.sqrt(math.log(node.parent.visits) / node.visits)
+
+
+
+        return node.action_reward + (node.value/node.visits) + self.exploration_param*math.sqrt(math.log(node.parent.visits) / node.visits)
 
     def selection(self):
         """
@@ -141,7 +147,7 @@ class MCTS:
         return actions
         
     # helper to apply an action and return the new state
-    def apply_action(self, state, action):
+    def apply_action(self, node, action):
         # create copy of the state
         #new_state = {}
         #new_state['board'] = state['board'].custom_copy()  
@@ -149,9 +155,9 @@ class MCTS:
         #new_state['queue'] = copy.deepcopy(state['queue'])
 
         new_state = {
-            'board': state['board'].custom_copy(),
-            'current_player': copy.deepcopy(state['current_player']),
-            'queue': copy.deepcopy(state['queue'])
+            'board': node.gameState['board'].custom_copy(),
+            'current_player': copy.deepcopy(node.gameState['current_player']),
+            'queue': copy.deepcopy(node.gameState['queue'])
         }
 
         board = new_state['board']
@@ -162,24 +168,31 @@ class MCTS:
         action_type = action[0]
         #print(f"Applying action: {action}")
         #check which action to take
+        reward = 0
         if action_type == 'build_road':
             _, v1, v2, length = action
             for _ in range(length):
-                # FIXED TODO: resources are taken when buliding the road and gives insufficient resources for each subsequent "build_road"
                 player.build_road(v1, v2, board)
                 v1, v2 = v2, v1
+                reward = 1
                 
             
         elif action_type == 'build_settlement':
             _, v = action
             player.build_settlement(v, board)
+            reward = 3
+
             
         elif action_type == 'build_city':
             _, v = action
             player.build_city(v, board)
+            reward = 5
+
 
         elif action_type == 'draw_devCard':
             player.draw_devCard(board)
+            reward = 1
+            
             
         # We aren't implementing playing a dev card
         # elif action_type == 'play_devCard':
@@ -189,6 +202,8 @@ class MCTS:
         elif action_type in ['trade_with_bank', 'trade_with_bank_3:1', 'trade_with_bank_2:1']:
             _, resource1, resource2 = action
             player.trade_with_bank(resource1, resource2)
+            reward = 1
+
 
         elif action_type == 'end_turn':
             #player.end_turn()
@@ -197,7 +212,9 @@ class MCTS:
         #print("New player resources after action:", player.resources) #DEBUG
         # update player in new_state
         new_state['current_player'] = player
-
+        node.action_reward = reward
+        # Debug print for the intermediate reward
+        #print(f"Applied action: {action}, Intermediate reward: {node.action_reward}")
         return new_state
 
     
@@ -234,9 +251,10 @@ class MCTS:
             print(f"Num legal actions: {len(legal_actions)}")  # DEBUG PRINT
             # create new child node for each legal action
             for action in legal_actions:
-                new_state = self.apply_action(node.gameState, action)
+                new_state = self.apply_action(node, action)
                 child_node = Node(new_state, action)
                 child_node.parent = node
+                child_node.action_reward = node.action_reward #include actionn reward
                 # add child node
                 node.children.append(child_node)
                 print(f"Added child with action: {action}")  # DEBUG PRINT
@@ -261,7 +279,7 @@ class MCTS:
         # call calcUST for node
         while node.parent is not None:
             node.visits += 1
-            node.value += result
+            node.value += result + node.action_reward #now includes action reward
             node = node.parent
         node.visits += 1
 

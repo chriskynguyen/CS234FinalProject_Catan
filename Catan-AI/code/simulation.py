@@ -21,7 +21,7 @@ class catanAISimGame():
         self.gameOver = False
         self.maxPoints = 10
         self.player_name = state["current_player"].name
-        self.result = -1
+        self.result = 0
         #Initialize blank player queue and initial set up of roads + settlements
         self.playerQueue = state["queue"]
 
@@ -165,10 +165,10 @@ class catanAISimGame():
         #self.board.displayBoard() #Display updated board
         numTurns = 0
         while not self.gameOver:
-            #Loop for each player's turn -> iterate through the player queue
+            #Loop for each player's turn -> iterate through the player queue starting at next player
             for currPlayer in self.playerQueue:
                 numTurns += 1
-                #print("AI Player {} playing...".format(currPlayer.name))
+                #print("AI Player {} playing...".format(currPlayer.name)) #DEBUG
                 turnOver = False #boolean to keep track of turn
                 diceRolled = False  #Boolean for dice roll status
                 
@@ -180,17 +180,16 @@ class catanAISimGame():
                     #Roll Dice and update player resources and dice stats
                     #pygame.event.pump()
                     # Don't roll dice when entering in sim (already did dice roll in actual gameplay)
-                    if numTurns != 1:
-                        diceNum = self.rollDice()
-                        self.update_playerResources(diceNum, currPlayer)
+                    diceNum = self.rollDice()
+                    self.update_playerResources(diceNum, currPlayer)
                     diceRolled = True
-                    #print("Player:{}, Resources:{}, Points: {}".format(currPlayer.name, currPlayer.resources, currPlayer.victoryPoints)) #DEBUG
+                    
                     self.sim_move(self.board, currPlayer) #AI Player makes all its moves
                     #Check if AI player gets longest road and update Victory points
                     self.check_longest_road(currPlayer)
                     
                     #self.boardView.displayGameScreen()#Update back to original gamescreen
-                    pygame.time.delay(300)
+                    #pygame.time.delay(300)
                     turnOver = True
                     
                     #Check if game is over
@@ -199,13 +198,13 @@ class catanAISimGame():
                         self.turnOver = True
                         break
 
-                if self.gameOver:
+                if self.gameOver: #TODO: test numTurns > __ 
                     if currPlayer.name == self.player_name:
                         self.result = 1
-                    startTime = pygame.time.get_ticks()
-                    runTime = 0
-                    while(runTime < 5000): #5 second delay prior to quitting
-                        runTime = pygame.time.get_ticks() - startTime
+                    #startTime = pygame.time.get_ticks()
+                    #runTime = 0
+                    #while(runTime < 5000): #5 second delay prior to quitting
+                    #    runTime = pygame.time.get_ticks() - startTime
 
                     break
                                    

@@ -51,7 +51,6 @@ class player():
     def copy(self):
         new_player = player(self.name, self.usePPO, self.exploration_param, self.color)
         new_player.isAI = self.isAI
-        #new_player.usePPO = self.ppo
         new_player.setupResources = copy.deepcopy(self.setupResources)
         new_player.resources = copy.deepcopy(self.resources)
         new_player.buildGraph = copy.deepcopy(self.buildGraph)

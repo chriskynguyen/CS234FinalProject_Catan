@@ -22,7 +22,7 @@ class catanAIGame():
         #Game State variables
         self.gameOver = False
         self.maxPoints = 10
-        self.numPlayers = 0 # Tested with 2
+        self.numPlayers = 0 
 
         #Dictionary to keep track of dice statistics
         self.diceStats = {2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0}
@@ -45,7 +45,7 @@ class catanAIGame():
         #Initialize boardview object
         self.boardView = catanGameView(self.board, self)
 
-        #Functiont to go through initial set up
+        #Function to go through initial set up
         self.build_initial_settlements()
         self.playCatan()
 
@@ -224,8 +224,8 @@ class catanAIGame():
                     self.diceStats_list.append(diceNum)
 
                     # copy queue for simulation
-                    copyQueue = deque(copy.deepcopy(list(self.playerQueue))) #TODO: fix queue   
-                    
+                    copyQueue = deque(copy.deepcopy(self.playerQueue)) 
+                    copyQueue.rotate(-1 * (self.playerQueue.index(currPlayer, 0, self.numPlayers)+1 % self.numPlayers))
                     currPlayer.move(self.board, copyQueue) #AI Player makes all its moves
                     #Check if AI player gets longest road and update Victory points
                     self.check_longest_road(currPlayer)
