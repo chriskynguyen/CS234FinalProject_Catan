@@ -92,13 +92,10 @@ class heuristicAIPlayer(player):
         print("AI Player {} playing...".format(self.name))
         
         for _ in range(10): 
-            #copy_board = board.custom_copy()
-            #copy_player = copy.deepcopy(self)
-            #state = {'board': copy_board, 'current_player': copy_player, 'queue': queue}
             state = {'board': board, 'current_player': self, 'queue': queue}
             print("Calling MCTS")
             tree = MCTS(state, self.exploration_param)
-            action = tree.bestMove() # tuple ('action', info, ...)
+            action = tree.bestMove(iterations=50) # tuple ('action', info, ...)
             print(f"Best action determined: {action[0]}")
             if action[0] == 'end_turn':
                 break

@@ -21,7 +21,7 @@ class catanAISimGame():
         self.gameOver = False
         self.maxPoints = 10
         self.player_name = state["current_player"].name
-        self.result = 0
+        self.result = -1
         #Initialize blank player queue and initial set up of roads + settlements
         self.playerQueue = state["queue"]
 
