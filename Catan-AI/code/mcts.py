@@ -47,9 +47,6 @@ class MCTS:
         if node.visits == 0:
             return float('inf')
 
-
-
-
         return node.action_reward + (node.value/node.visits) + self.exploration_param*math.sqrt(math.log(node.parent.visits) / node.visits)
 
     def selection(self):
@@ -91,13 +88,14 @@ class MCTS:
 
         # Append to actions[]
         # Add road actions
+        #TODO: check if player has roads left to build
         for road, length in potential_roads.items():
-            if num_bricks >= length and num_wood >= length:
+            if num_bricks >= length and num_wood >= length and player.roadsLeft > 0:
                 #print('Possible road of length ' + str(length) + ' at ' + str(road[0]) + ' to ' + str(road[1]))
                 actions.append(('build_road', road[0], road[1], length))
 
         # Add settlement building actions
-        if num_bricks >= 1 and num_wood >= 1 and num_sheep >= 1 and num_wheat >= 1:
+        if num_bricks >= 1 and num_wood >= 1 and num_sheep >= 1 and num_wheat >= 1 and player.settlementsLeft > 0:
             for settlement in potential_settlements.keys():
                 #print(f'Possible settlement at {settlement}')
                 actions.append(('build_settlement', settlement))
@@ -180,7 +178,7 @@ class MCTS:
         elif action_type == 'build_settlement':
             _, v = action
             player.build_settlement(v, board)
-            reward = 3
+            reward = 4
 
             
         elif action_type == 'build_city':
@@ -202,8 +200,7 @@ class MCTS:
         elif action_type in ['trade_with_bank', 'trade_with_bank_3:1', 'trade_with_bank_2:1']:
             _, resource1, resource2 = action
             player.trade_with_bank(resource1, resource2)
-            reward = 1
-
+            reward = -1
 
         elif action_type == 'end_turn':
             #player.end_turn()
@@ -233,7 +230,6 @@ class MCTS:
 
         return True
 
-    #TODO: during expansion, make copies of the state
     def expansion(self, node):
         """
         Expand node with new child node
@@ -241,34 +237,32 @@ class MCTS:
 
         # check if node is a terminal state
         if self.is_terminal_state(node.gameState):
-            return
+            return None
 
         # if node is not already expanded, expand it
         if not node.children:
             
             # get all legal actions from current node
             legal_actions = self.get_legal_actions(node.gameState)
-            print(f"Num legal actions: {len(legal_actions)}")  # DEBUG PRINT
+            #print(f"Num legal actions: {len(legal_actions)}")  # DEBUG PRINT
             # create new child node for each legal action
             for action in legal_actions:
                 new_state = self.apply_action(node, action)
                 child_node = Node(new_state, action)
                 child_node.parent = node
-                child_node.action_reward = node.action_reward #include actionn reward
+                child_node.action_reward = node.action_reward #include action reward 
                 # add child node
                 node.children.append(child_node)
-                print(f"Added child with action: {action}")  # DEBUG PRINT
+                #print(f"Added child with action: {action}")  # DEBUG PRINT
+        return node
     
-    #TODO: only fully simulates for the first node not other nodes
     def simulation(self, node):
         """
         Simulate game for the given child node
         Result: Win(+1) and Lose(-1) 
         """
-        #print("VP before sim: ", node.gameState['current_player'].victoryPoints) #DEBUG PRINT
-        simulate = simulation.catanAISimGame(state=node.gameState, sim_print=True) #DEBUG sim_print=False, for actual sim_print=True
-        #print("VP after sim: ", node.gameState['current_player'].victoryPoints)#DEBUG PRINT
-        
+        # for debugging sim_print=False, for actual sim_print=True
+        simulate = simulation.catanAISimGame(state=node.gameState, sim_print=True) 
         result = simulate.get_result()
         return result
 
@@ -276,12 +270,11 @@ class MCTS:
         """
         Send reward back to ancestors of leaf
         """
-        # call calcUST for node
         while node.parent is not None:
             node.visits += 1
-            node.value += result + node.action_reward #now includes action reward
+            node.value += result #+ node.action_reward #now includes action reward
             node = node.parent
-        node.visits += 1
+        node.visits += 1 # increment visit for root node
 
     def bestMove(self, iterations=100):
         """
@@ -289,18 +282,19 @@ class MCTS:
         Always contains 'end_turn' move
 
         Note: Try pruning branches that show no improvement. Can help reduce runtime
+            Additionally try simulating for one child node at a time?
         """
         for i in range(iterations):
             # select node with best UCT
             best_node = self.selection()
             # expand node
-            self.expansion(best_node)
-            # TODO: add a check to see if best_node has only 1 legal action ("end_turn"), not worth time to simulate
-            # Maybe add a check if this is 1st iteration so we don't have to continually simulate end turn
+            best_node = self.expansion(best_node)
+            # add a check to see if best_node has only 1 legal action ("end_turn"), not worth time to simulate
             if i==0 and len(best_node.children) == 1 and best_node.children[0].action[0] == 'end_turn':
                 break
-            # TODO THOUGHT: does it make sense to simulate a node that has only one child node with action 'end_turn'
-            # simulate
+            # case where node is terminal
+            if best_node is None: 
+                return ('end_turn',)
             for child in best_node.children:
                 #simulate
                 result = self.simulation(child)
@@ -312,7 +306,7 @@ class MCTS:
             #self.backpropagation(best_node, result)
         
         # find child with most visits
-        max_visits = max([child.visits for child in self.root_node.children])
+        max_visits = max([child.visits for child in self.root_node.children]) #TODO: ValueError: max() arg is an empty sequence
         for child in self.root_node.children:
             if child.visits == max_visits:
                 return child.action
