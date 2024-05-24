@@ -26,7 +26,7 @@ class Node:
         self.visits = 0
 
         # action reward
-        self.action_reward = 0
+        self.action_reward = -1
 
         # action tuple
         self.action = action
@@ -47,7 +47,11 @@ class MCTS:
         if node.visits == 0:
             return float('inf')
 
-        return node.action_reward + (node.value/node.visits) + self.exploration_param*math.sqrt(math.log(node.parent.visits) / node.visits)
+        # reduce exploration if close to winning
+        explor_param = self.exploration_param
+        if node.gameState['current_player'].victoryPoints >= 8:
+            explor_param *= 0.5
+        return node.action_reward + (node.value/node.visits) + explor_param*math.sqrt(math.log(node.parent.visits) / node.visits)
 
     def selection(self):
         """
@@ -88,57 +92,65 @@ class MCTS:
 
         # Append to actions[]
         # Add road actions
-        #TODO: check if player has roads left to build
-        for road, length in potential_roads.items():
-            if num_bricks >= length and num_wood >= length and player.roadsLeft > 0:
-                #print('Possible road of length ' + str(length) + ' at ' + str(road[0]) + ' to ' + str(road[1]))
-                actions.append(('build_road', road[0], road[1], length))
+        #TODO: add statement to only do building actions when resources are high and close to winning
+        if player.victoryPoints >= 8 and all(value > 3 for value in player.resources.values()):
+            # Add settlement building actions
+            if num_bricks >= 1 and num_wood >= 1 and num_sheep >= 1 and num_wheat >= 1 and player.settlementsLeft > 0:
+                for settlement in potential_settlements.keys():
+                    #print(f'Possible settlement at {settlement}')
+                    actions.append(('build_settlement', settlement))
 
-        # Add settlement building actions
-        if num_bricks >= 1 and num_wood >= 1 and num_sheep >= 1 and num_wheat >= 1 and player.settlementsLeft > 0:
-            for settlement in potential_settlements.keys():
-                #print(f'Possible settlement at {settlement}')
-                actions.append(('build_settlement', settlement))
+            # Add city building actions
+            if num_ore >= 3 and num_wheat >= 2 and player.citiesLeft > 0:
+                for city in potential_cities.keys():
+                    #print(f'Possible city at {city}')
+                    actions.append(('build_city', city))
+        else:
+            for road, length in potential_roads.items():
+                if num_bricks >= length and num_wood >= length and player.roadsLeft > 0:
+                    #print('Possible road of length ' + str(length) + ' at ' + str(road[0]) + ' to ' + str(road[1]))
+                    actions.append(('build_road', road[0], road[1], length))
 
-        # Add city building actions
-        if num_ore >= 3 and num_wheat >= 2:
-            for city in potential_cities.keys():
-                #print(f'Possible city at {city}')
-                actions.append(('build_city', city))
+            # Add settlement building actions
+            if num_bricks >= 1 and num_wood >= 1 and num_sheep >= 1 and num_wheat >= 1 and player.settlementsLeft > 0:
+                for settlement in potential_settlements.keys():
+                    #print(f'Possible settlement at {settlement}')
+                    actions.append(('build_settlement', settlement))
 
-        # Draw Development Card
-        if num_wheat >= 1 and num_ore >= 1 and num_sheep >= 1:
-            #print('Possible action: draw_devCard')
-            actions.append(('draw_devCard',))
+            # Add city building actions
+            if num_ore >= 3 and num_wheat >= 2 and player.citiesLeft > 0:
+                for city in potential_cities.keys():
+                    #print(f'Possible city at {city}')
+                    actions.append(('build_city', city))
 
-        # # Play Development Card
-        # for dev_card, amount in player.devCards.items():
-        #     if dev_card != 'VP' and amount > 0:
-        #         actions.append(('play_devCard', dev_card))
+            # Draw Development Card
+            if num_wheat >= 1 and num_ore >= 1 and num_sheep >= 1 and not all(value == 0 for value in board.devCardStack.values()):
+                #print('Possible action: draw_devCard')
+                actions.append(('draw_devCard',))
+            # Resource types
+            
+            resource_types = ['BRICK', 'WOOD', 'SHEEP', 'WHEAT', 'ORE']
 
-        # Resource types
-        resource_types = ['BRICK', 'WOOD', 'SHEEP', 'WHEAT', 'ORE']
+            # Add trading actions with the bank
+            for resource_1, amount_1 in player.resources.items():
+                # Trade with the bank 4:1
+                if amount_1 >= 4:
+                    for resource_2 in resource_types:
+                        if resource_1 != resource_2:
+                            actions.append(('trade_with_bank', resource_1, resource_2))
 
-        # Add trading actions with the bank
-        for resource_1, amount_1 in player.resources.items():
-            # Trade with the bank 4:1
-            if amount_1 >= 4:
-                for resource_2 in resource_types:
-                    if resource_1 != resource_2:
-                        actions.append(('trade_with_bank', resource_1, resource_2))
+                # General Trading Post 3:1
+                if ('3:1 PORT' in player.portList) and (amount_1 >= 3):
+                    for resource_2 in resource_types:
+                        if resource_1 != resource_2:
+                            actions.append(('trade_with_bank_3:1', resource_1, resource_2))
 
-            # General Trading Post 3:1
-            if ('3:1 PORT' in player.portList) and (amount_1 >= 3):
-                for resource_2 in resource_types:
-                    if resource_1 != resource_2:
-                        actions.append(('trade_with_bank_3:1', resource_1, resource_2))
-
-            # Specific Trading Port 2:1
-            specific_port = f"2:1 {resource_1}"
-            if specific_port in player.portList and amount_1 >= 2:
-                for resource_2 in resource_types:
-                    if resource_1 != resource_2:
-                        actions.append(('trade_with_bank_2:1', resource_1, resource_2))
+                # Specific Trading Port 2:1
+                specific_port = f"2:1 {resource_1}"
+                if specific_port in player.portList and amount_1 >= 2:
+                    for resource_2 in resource_types:
+                        if resource_1 != resource_2:
+                            actions.append(('trade_with_bank_2:1', resource_1, resource_2))
 
         # adding "end turn" action
         actions.append(('end_turn', ))
@@ -170,25 +182,25 @@ class MCTS:
         if action_type == 'build_road':
             _, v1, v2, length = action
             for _ in range(length):
-                player.build_road(v1, v2, board)
+                player.build_road(v1, v2, board, sim=True)
                 v1, v2 = v2, v1
                 reward = 1
                 
             
         elif action_type == 'build_settlement':
             _, v = action
-            player.build_settlement(v, board)
-            reward = 4
+            player.build_settlement(v, board, sim=True)
+            reward = 6
 
             
         elif action_type == 'build_city':
             _, v = action
-            player.build_city(v, board)
-            reward = 5
+            player.build_city(v, board, sim=True)
+            reward = 4
 
 
         elif action_type == 'draw_devCard':
-            player.draw_devCard(board)
+            player.draw_devCard(board, sim=True)
             reward = 1
             
             
@@ -199,19 +211,16 @@ class MCTS:
 
         elif action_type in ['trade_with_bank', 'trade_with_bank_3:1', 'trade_with_bank_2:1']:
             _, resource1, resource2 = action
-            player.trade_with_bank(resource1, resource2)
-            reward = -1
+            player.trade_with_bank(resource1, resource2, sim=True)
+            reward = 1
 
         elif action_type == 'end_turn':
-            #player.end_turn()
             pass
-        #print("Original player resources after action:", state['current_player'].resources) #DEBUG
-        #print("New player resources after action:", player.resources) #DEBUG
+
         # update player in new_state
         new_state['current_player'] = player
         node.action_reward = reward
-        # Debug print for the intermediate reward
-        #print(f"Applied action: {action}, Intermediate reward: {node.action_reward}")
+
         return new_state
 
     
@@ -237,7 +246,7 @@ class MCTS:
 
         # check if node is a terminal state
         if self.is_terminal_state(node.gameState):
-            return None
+            return 
 
         # if node is not already expanded, expand it
         if not node.children:
@@ -254,7 +263,6 @@ class MCTS:
                 # add child node
                 node.children.append(child_node)
                 #print(f"Added child with action: {action}")  # DEBUG PRINT
-        return node
     
     def simulation(self, node):
         """
@@ -288,14 +296,14 @@ class MCTS:
             # select node with best UCT
             best_node = self.selection()
             # expand node
-            best_node = self.expansion(best_node)
+            self.expansion(best_node)
             # add a check to see if best_node has only 1 legal action ("end_turn"), not worth time to simulate
             if i==0 and len(best_node.children) == 1 and best_node.children[0].action[0] == 'end_turn':
                 break
             # case where node is terminal
-            if best_node is None: 
-                return ('end_turn',)
-            for child in best_node.children:
+            #if best_node is None: 
+            #    return ('end_turn',)
+            for child in best_node.children: 
                 #simulate
                 result = self.simulation(child)
                 #backpropagate
@@ -304,7 +312,8 @@ class MCTS:
             #result = self.simulation(best_node.children[])
             # backpropagate
             #self.backpropagation(best_node, result)
-        
+        if not self.root_node.children:
+            return ('end_turn,')
         # find child with most visits
         max_visits = max([child.visits for child in self.root_node.children]) #TODO: ValueError: max() arg is an empty sequence
         for child in self.root_node.children:
