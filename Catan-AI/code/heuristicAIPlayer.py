@@ -92,11 +92,13 @@ class heuristicAIPlayer(player):
         print("AI Player {} playing...".format(self.name))
         
         for _ in range(10): 
+            if self.victoryPoints > 9:
+                break
             state = {'board': board, 'current_player': self, 'queue': queue}
-            print("Calling MCTS")
+            #print("Calling MCTS")
             tree = MCTS(state, self.exploration_param)
             action = tree.bestMove(iterations=50) # tuple ('action', info, ...)
-            print(f"Best action determined: {action[0]}")
+            #print(f"Best action determined: {action[0]}")
             if action[0] == 'end_turn':
                 break
             self.run_action(action, board)
