@@ -92,7 +92,7 @@ class MCTS:
 
         # Append to actions[]
         # Add road actions
-        #TODO: add statement to only do building actions when resources are high and close to winning
+        # add statement to only do building actions when resources are high and close to winning
         if player.victoryPoints >= 8 and all(value > 3 for value in player.resources.values()):
             # Add settlement building actions
             if num_bricks >= 1 and num_wood >= 1 and num_sheep >= 1 and num_wheat >= 1 and player.settlementsLeft > 0:
@@ -106,6 +106,7 @@ class MCTS:
                     #print(f'Possible city at {city}')
                     actions.append(('build_city', city))
         else:
+            # Add road actions
             for road, length in potential_roads.items():
                 if num_bricks >= length and num_wood >= length and player.roadsLeft > 0:
                     #print('Possible road of length ' + str(length) + ' at ' + str(road[0]) + ' to ' + str(road[1]))
@@ -159,11 +160,6 @@ class MCTS:
     # helper to apply an action and return the new state
     def apply_action(self, node, action):
         # create copy of the state
-        #new_state = {}
-        #new_state['board'] = state['board'].custom_copy()  
-        #new_state['current_player'] = copy.deepcopy(state['current_player']) 
-        #new_state['queue'] = copy.deepcopy(state['queue'])
-
         new_state = {
             'board': node.gameState['board'].custom_copy(),
             'current_player': copy.deepcopy(node.gameState['current_player']),
@@ -183,7 +179,7 @@ class MCTS:
             _, v1, v2, length = action
             for _ in range(length):
                 player.build_road(v1, v2, board, sim=True)
-                v1, v2 = v2, v1
+                v1, v2 = v2, v1 #is this necessary?
                 reward = 1
                 
             
@@ -203,11 +199,6 @@ class MCTS:
             player.draw_devCard(board, sim=True)
             reward = 1
             
-            
-        # We aren't implementing playing a dev card
-        # elif action_type == 'play_devCard':
-        #     _, dev_card = action
-        #     player.play_devCard()
 
         elif action_type in ['trade_with_bank', 'trade_with_bank_3:1', 'trade_with_bank_2:1']:
             _, resource1, resource2 = action

@@ -55,7 +55,7 @@ class catanGame():
             playerNameInput = input("Enter Player {} name: ".format(i+1))
             usePPO = input("Use PPO (yes or no): ".format(i+1))
             exploration_param = input("Choose exploration parameter: ".format(i+1))
-            newPlayer = player(playerNameInput, usePPO, exploration_param, playerColors[i])
+            newPlayer = player(playerNameInput, playerColors[i], usePPO, exploration_param)
             self.playerQueue.put(newPlayer)
 
         usePPO = input("Use PPO (yes or no): ".format(i+1))

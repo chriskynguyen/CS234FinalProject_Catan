@@ -28,7 +28,7 @@ class catanAIGame():
         self.diceStats = {2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0}
         self.diceStats_list = []
         
-        while(self.numPlayers not in [2,3]): # Only accept 2 and 3 player games, testing with 2
+        while(self.numPlayers not in [2,3]): # Only accept 2 and 3 player games, use 2 for testing 
             try:
                 self.numPlayers = int(input("Enter Number of Players (2 or 3):"))
             except:
@@ -64,7 +64,8 @@ class catanAIGame():
             playerNameInput = input("Enter AI Player {} name: ".format(i+1))
             usePPO = input("Use PPO (yes or no): ".format(i+1))
             exploration_param = input("Choose exploration parameter: ".format(i+1))
-            newPlayer = heuristicAIPlayer(playerNameInput, usePPO, exploration_param, playerColors[i])
+            newPlayer = heuristicAIPlayer(playerNameInput, playerColors[i], usePPO, exploration_param)
+            newPlayer.player_id = i+1
             newPlayer.updateAI()
             #self.playerQueue.put(newPlayer)
             self.playerQueue.append(newPlayer)

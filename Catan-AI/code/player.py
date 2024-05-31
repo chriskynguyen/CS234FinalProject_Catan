@@ -10,8 +10,9 @@ class player():
     'Class Definition for Game Player'
 
     #Initialize a game player, we use A, B and C to identify
-    def __init__(self, playerName, usePPO, exploration_param, playerColor):
+    def __init__(self, playerName, playerColor, usePPO=False, exploration_param=0.5):
         self.name = playerName
+        self.player_id = 0 # used in gym environment
         self.color = playerColor
         self.ppo = False # specify if AI uses ppo during simulation or not
         if usePPO == "yes":
@@ -46,27 +47,36 @@ class player():
         self.visibleVictoryPoints = self.victoryPoints - self.devCards['VP']
 
 
-            
-    # custom function to copy player object
-    def copy(self):
-        new_player = player(self.name, self.usePPO, self.exploration_param, self.color)
-        new_player.isAI = self.isAI
-        new_player.setupResources = copy.deepcopy(self.setupResources)
-        new_player.resources = copy.deepcopy(self.resources)
-        new_player.buildGraph = copy.deepcopy(self.buildGraph)
-        new_player.devCards = copy.deepcopy(self.devCards)
-        new_player.victoryPoints = self.victoryPoints
-        new_player.visibleVictoryPoints = self.visibleVictoryPoints
-        new_player.longestRoadFlag = self.longestRoadFlag
-        new_player.largestArmyFlag = self.largestArmyFlag
-        new_player.maxRoadLength = self.maxRoadLength
-        new_player.knightsPlayed = self.knightsPlayed
-        new_player.roadsLeft = self.roadsLeft
-        new_player.settlementsLeft = self.settlementsLeft
-        new_player.citiesLeft = self.citiesLeft
-        new_player.devCardPlayedThisTurn = self.devCardPlayedThisTurn
-        new_player.portList = copy.deepcopy(self.portList)
-        return new_player
+    # function for gym environment reset
+    def player_reset(self):
+        self.victoryPoints = 0
+        self.settlementsLeft = 5
+        self.roadsLeft = 15
+        self.citiesLeft = 4
+        if self.isAI:
+            self.resources = {'ORE':0, 'BRICK':4, 'WHEAT':2, 'WOOD':4, 'SHEEP':2} #Dictionary that keeps track of resource amounts
+        else:
+            self.resources = {'ORE':5, 'BRICK':6, 'WHEAT':3, 'WOOD':6, 'SHEEP':3} #Dictionary that keeps track of resource amounts
+
+        self.knightsPlayed = 0
+        self.largestArmyFlag = False
+        
+        self.maxRoadLength = 0
+        self.longestRoadFlag = False
+
+        #Undirected Graph to keep track of which vertices and edges player has colonised
+        #Every time a player's build graph is updated the gameBoardGraph must also be updated
+
+        #Each of the 3 lists store vertex information - Roads are stores with tuples of vertex pairs
+        self.buildGraph = {'ROADS':[], 'SETTLEMENTS':[], 'CITIES':[]}
+        self.portList = [] #List of ports acquired
+
+        #Dev cards in possession
+        self.newDevCards = [] #List to keep the new dev cards draw - update the main list every turn
+        self.devCards = {'KNIGHT':0, 'VP':0, 'MONOPOLY':0, 'ROADBUILDER':0, 'YEAROFPLENTY':0}
+        self.devCardPlayedThisTurn = False
+
+        self.visibleVictoryPoints = self.victoryPoints - self.devCards['VP']
 
 
     #function to build a road from vertex v1 to vertex v2
