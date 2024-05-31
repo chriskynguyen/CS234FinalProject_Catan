@@ -16,29 +16,40 @@ from code.player import *
 from code.heuristicAIPlayer import *
 
 PLAYER_COLORS = ['black', 'darkslateblue', 'magenta4', 'orange1']
-
-
-#function to check if a player has the longest road - after building latest road
-def check_longest_road(self, player_i):
-    if(player_i.maxRoadLength >= 5): #Only eligible if road length is at least 5
-        longestRoad = True
-        for p in list(self.playerQueue):
-            if(p.maxRoadLength >= player_i.maxRoadLength and p != player_i): #Check if any other players have a longer road
-                longestRoad = False
-        
-        if(longestRoad and player_i.longestRoadFlag == False): #if player_i takes longest road and didn't already have longest road
-            #Set previous players flag to false and give player_i the longest road points
-            for p in list(self.playerQueue):
-                if(p.longestRoadFlag):
-                    p.longestRoadFlag = False
-                    p.victoryPoints -= 2
-
-            player_i.longestRoadFlag = True
-            player_i.victoryPoints += 2
+RESOURCE_TYPES = ['BRICK', 'WOOD', 'SHEEP', 'WHEAT', 'ORE']
+ACTIONS_ARRAY = [
+    *[("build_road", v1, v2, 1) for v1 in range(54) for v2 in range(54)],
+    *[("build_settlement", v1) for v1 in range(54)],
+    *[("build_city", v1) for v1 in range(54)],
+    ("draw_devCard",),
+    *[
+        ("trade_with_bank", resource_1, resource_2) 
+        for resource_1 in RESOURCE_TYPES 
+        for resource_2 in RESOURCE_TYPES 
+        if resource_1 != resource_2
+    ],
+    *[
+        ("trade_with_bank_3:1", resource_1, resource_2) 
+        for resource_1 in RESOURCE_TYPES 
+        for resource_2 in RESOURCE_TYPES 
+        if resource_1 != resource_2
+    ],
+    *[
+        ("trade_with_bank_2:1", resource_1, resource_2) 
+        for resource_1 in RESOURCE_TYPES 
+        for resource_2 in RESOURCE_TYPES 
+        if resource_1 != resource_2
+    ],
+    ("end_turn",),
+]
+ACTIONS_LEN = len(ACTIONS_ARRAY)
 
 
 class CatanEnv(gym.Env):
-    #metadata = {"render_modes": []}
+    metadata = {
+        "render_modes": ["human"],
+        "render_fps": 30
+    }
 
     def __init__(self, exploration_param):
         super(CatanEnv, self).__init__()
@@ -54,6 +65,7 @@ class CatanEnv(gym.Env):
         self.current_player_idx = 0
         self.current_player = self.players[self.current_player_idx]
         self.turn_number = 0
+
 
         self.num_hex_tiles = 19
         self.num_vertices = 54
@@ -93,8 +105,13 @@ class CatanEnv(gym.Env):
             'game_state': self.game_state_space,
         })
         
-        # TODO: Define the action space 
-        self.action_space = spaces.Discrete(8)
+        # Define the action space 
+        self.action_space = spaces.Discrete(ACTIONS_LEN)
+
+        self.render_mode = "human"
+        self.view = None
+        self.window = None
+        self.clock = None
 
     def _get_obs(self):
         """
@@ -193,7 +210,87 @@ class CatanEnv(gym.Env):
         self.current_player = self.players[self.current_player_idx]
         self.turn_number = 0
 
-        return _get_obs()
+        self.view = catanGameView(self.board, self) # Initialize the view
+        if self.render_mode == "human":
+            pygame.init()
+            self.clock = pygame.time.Clock()
+
+        return self._get_obs()
+
+    def get_valid_actions(self):
+        board = self.board
+        player = self.current_player
+
+        actions = []
+
+        # Get potential actions just based on state (not including resources)
+        potential_roads = board.get_potential_roads(player)
+        potential_settlements = board.get_potential_settlements(player)
+        potential_cities = board.get_potential_cities(player)
+
+        # get resource counts
+        num_bricks = player.resources['BRICK']
+        num_wood = player.resources['WOOD']
+        num_sheep = player.resources['SHEEP']
+        num_wheat = player.resources['WHEAT']
+        num_ore = player.resources['ORE']
+
+        # Append to actions[]
+        # Add road actions
+        for road, length in potential_roads.items():
+            if num_bricks >= length and num_wood >= length and player.roadsLeft > 0:
+                #print('Possible road of length ' + str(length) + ' at ' + str(road[0]) + ' to ' + str(road[1]))
+                actions.append(('build_road', road[0].vertexIndex, road[1].vertexIndex, length))
+
+        # Add settlement building actions
+        if num_bricks >= 1 and num_wood >= 1 and num_sheep >= 1 and num_wheat >= 1 and player.settlementsLeft > 0:
+            for settlement in potential_settlements.keys():
+                #print(f'Possible settlement at {settlement}')
+                actions.append(('build_settlement', settlement.vertexIndex))
+
+        # Add city building actions
+        if num_ore >= 3 and num_wheat >= 2 and player.citiesLeft > 0:
+            for city in potential_cities.keys():
+                #print(f'Possible city at {city}')
+                actions.append(('build_city', city.vertexIndex))
+
+        # Draw Development Card
+        if num_wheat >= 1 and num_ore >= 1 and num_sheep >= 1 and not all(value == 0 for value in board.devCardStack.values()):
+            #print('Possible action: draw_devCard')
+            actions.append(('draw_devCard',))
+        # Resource types
+        
+        resource_types = ['BRICK', 'WOOD', 'SHEEP', 'WHEAT', 'ORE']
+
+        # Add trading actions with the bank
+        for resource_1, amount_1 in player.resources.items():
+            # Trade with the bank 4:1
+            if amount_1 >= 4:
+                for resource_2 in resource_types:
+                    if resource_1 != resource_2:
+                        actions.append(('trade_with_bank', resource_1, resource_2))
+
+            # General Trading Post 3:1
+            if ('3:1 PORT' in player.portList) and (amount_1 >= 3):
+                for resource_2 in resource_types:
+                    if resource_1 != resource_2:
+                        actions.append(('trade_with_bank_3:1', resource_1, resource_2))
+
+            # Specific Trading Port 2:1
+            specific_port = f"2:1 {resource_1}"
+            if specific_port in player.portList and amount_1 >= 2:
+                for resource_2 in resource_types:
+                    if resource_1 != resource_2:
+                        actions.append(('trade_with_bank_2:1', resource_1, resource_2))
+
+        # adding "end turn" action
+        actions.append(('end_turn', ))
+        return actions
+
+    def get_vertex_from_idx(self, v):
+        for vertex in self.board.boardGraph.values():
+            if vertex.vertexIndex == v:
+                return vertex
 
     def apply_action(self, player, action):
         board = self.board
@@ -202,17 +299,17 @@ class CatanEnv(gym.Env):
         if action_type == 'build_road':
             _, v1, v2, length = action
             for _ in range(length):
-                player.build_road(v1, v2, board, sim=True)
+                player.build_road(self.get_vertex_from_idx(v1), self.get_vertex_from_idx(v2), board, sim=True)
                 
             
         elif action_type == 'build_settlement':
             _, v = action
-            player.build_settlement(v, board, sim=True)
+            player.build_settlement(self.get_vertex_from_idx(v), board, sim=True)
 
             
         elif action_type == 'build_city':
             _, v = action
-            player.build_city(v, board, sim=True)
+            player.build_city(self.get_vertex_from_idx(v), board, sim=True)
 
 
         elif action_type == 'draw_devCard':
@@ -268,27 +365,66 @@ class CatanEnv(gym.Env):
         else:
             currentPlayer.heuristic_move_robber(self.board)
 
+    #function to check if a player has the longest road - after building latest road
+    def check_longest_road(self, player_i):
+        if(player_i.maxRoadLength >= 5): #Only eligible if road length is at least 5
+            longestRoad = True
+            for p in self.players:
+                if(p.maxRoadLength >= player_i.maxRoadLength and p != player_i): #Check if any other players have a longer road
+                    longestRoad = False
+            
+            if(longestRoad and player_i.longestRoadFlag == False): #if player_i takes longest road and didn't already have longest road
+                #Set previous players flag to false and give player_i the longest road points
+                for p in self.players:
+                    if(p.longestRoadFlag):
+                        p.longestRoadFlag = False
+                        p.victoryPoints -= 2
+
+                player_i.longestRoadFlag = True
+                player_i.victoryPoints += 2
+
     def step(self, action):
         """
         Step through player move given a single action
         """
-        done = False
+        terminated = False # game over, end episode
+        end_turn = False
         if not self.dice_rolled:
             diceNum = self.rollDice()
             self.update_playerResources(diceNum, self.current_player)
             self.dice_rolled = True
         
         self.apply_action(self.current_player, action)
+        self.check_longest_road(self.current_player)
 
-        done = self.is_done(self.current_player)
+        terminated = self.is_done(self.current_player)
         if action[0] == 'end_turn':
+            end_turn = True
             self.current_player_idx = (self.current_player_idx + 1) % self.num_players
             self.current_player = self.players[self.current_player_idx]
             self.turn_number += 1            
             self.dice_rolled = False
 
-        reward = 1 if done else 0 #TODO: make reward function better
+        reward = 1 if terminated else 0 #TODO: make reward function better
         observation = self._get_obs() 
+        info = {'turn_done': end_turn}
 
-        return observation, reward, done
+        return observation, reward, terminated, end_turn, info
 
+    def render(self):
+        if self.render_mode == "human":
+            self._render_frame()
+
+    def _render_frame(self):
+        if self.view is None:
+            raise ValueError("View has not been initialized. Call reset() before rendering.")
+
+        self.view.displayGameScreen()
+        pygame.event.pump()
+        pygame.display.update()
+        self.clock.tick(self.metadata["render_fps"])
+        
+
+    
+
+    
