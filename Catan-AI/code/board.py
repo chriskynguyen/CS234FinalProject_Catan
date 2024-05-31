@@ -170,7 +170,7 @@ class catanBoard(hexTile, Vertex):
                 self.vertexIndexCount += 1 #Increment index for future
 
     
-    #Function to add adges to graph given all vertices
+    #Function to add edges to graph given all vertices
     def updateGraphEdges(self):
         for v1 in self.boardGraph.keys():
             for v2 in self.boardGraph.keys():
