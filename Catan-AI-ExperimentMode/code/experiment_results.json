@@ -1,0 +1,802 @@
+[
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 37,
+        "points": {
+            "MCTS Player": 5,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 23,
+        "points": {
+            "MCTS Player": 4,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 54,
+        "points": {
+            "MCTS Player": 2,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 43,
+        "points": {
+            "MCTS Player": 4,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 35,
+        "points": {
+            "MCTS Player": 2,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 54,
+        "points": {
+            "MCTS Player": 6,
+            "Heuristic Player": 11
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 35,
+        "points": {
+            "MCTS Player": 5,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 31,
+        "points": {
+            "MCTS Player": 5,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 41,
+        "points": {
+            "MCTS Player": 5,
+            "Heuristic Player": 11
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 70,
+        "points": {
+            "MCTS Player": 7,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 25,
+        "points": {
+            "MCTS Player": 3,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 58,
+        "points": {
+            "MCTS Player": 5,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 34,
+        "points": {
+            "MCTS Player": 2,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 34,
+        "points": {
+            "MCTS Player": 3,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "MCTS Player",
+        "numTurns": 74,
+        "points": {
+            "MCTS Player": 10,
+            "Heuristic Player": 9
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 54,
+        "points": {
+            "MCTS Player": 6,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 29,
+        "points": {
+            "MCTS Player": 4,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "MCTS Player",
+        "numTurns": 61,
+        "points": {
+            "MCTS Player": 10,
+            "Heuristic Player": 9
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 57,
+        "points": {
+            "MCTS Player": 6,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 47,
+        "points": {
+            "MCTS Player": 4,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 44,
+        "points": {
+            "MCTS Player": 4,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "MCTS Player",
+        "numTurns": 78,
+        "points": {
+            "MCTS Player": 10,
+            "Heuristic Player": 9
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 34,
+        "points": {
+            "MCTS Player": 3,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 32,
+        "points": {
+            "MCTS Player": 3,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 56,
+        "points": {
+            "MCTS Player": 5,
+            "Heuristic Player": 11
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 42,
+        "points": {
+            "MCTS Player": 5,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 35,
+        "points": {
+            "MCTS Player": 5,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 69,
+        "points": {
+            "MCTS Player": 8,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 41,
+        "points": {
+            "MCTS Player": 4,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 64,
+        "points": {
+            "MCTS Player": 7,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 49,
+        "points": {
+            "MCTS Player": 3,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 39,
+        "points": {
+            "MCTS Player": 3,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 58,
+        "points": {
+            "MCTS Player": 8,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 78,
+        "points": {
+            "MCTS Player": 9,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 44,
+        "points": {
+            "MCTS Player": 4,
+            "Heuristic Player": 11
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 50,
+        "points": {
+            "MCTS Player": 4,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 44,
+        "points": {
+            "MCTS Player": 3,
+            "Heuristic Player": 11
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 53,
+        "points": {
+            "MCTS Player": 5,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 31,
+        "points": {
+            "MCTS Player": 4,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 54,
+        "points": {
+            "MCTS Player": 7,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 56,
+        "points": {
+            "MCTS Player": 3,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 34,
+        "points": {
+            "MCTS Player": 3,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "MCTS Player",
+        "numTurns": 28,
+        "points": {
+            "MCTS Player": 10,
+            "Heuristic Player": 5
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 43,
+        "points": {
+            "MCTS Player": 4,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 85,
+        "points": {
+            "MCTS Player": 6,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 53,
+        "points": {
+            "MCTS Player": 5,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 41,
+        "points": {
+            "MCTS Player": 2,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "MCTS Player",
+        "numTurns": 58,
+        "points": {
+            "MCTS Player": 10,
+            "Heuristic Player": 7
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 45,
+        "points": {
+            "MCTS Player": 3,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 39,
+        "points": {
+            "MCTS Player": 2,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 46,
+        "points": {
+            "MCTS Player": 6,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "MCTS Player",
+        "numTurns": 57,
+        "points": {
+            "MCTS Player": 10,
+            "Heuristic Player": 7
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 26,
+        "points": {
+            "MCTS Player": 4,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "MCTS Player",
+        "numTurns": 29,
+        "points": {
+            "MCTS Player": 10,
+            "Heuristic Player": 6
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 47,
+        "points": {
+            "MCTS Player": 7,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 55,
+        "points": {
+            "MCTS Player": 9,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 50,
+        "points": {
+            "MCTS Player": 6,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 38,
+        "points": {
+            "MCTS Player": 4,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 112,
+        "points": {
+            "MCTS Player": 9,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 39,
+        "points": {
+            "MCTS Player": 6,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 61,
+        "points": {
+            "MCTS Player": 4,
+            "Heuristic Player": 11
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 45,
+        "points": {
+            "MCTS Player": 3,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 32,
+        "points": {
+            "MCTS Player": 3,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 42,
+        "points": {
+            "MCTS Player": 3,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 32,
+        "points": {
+            "MCTS Player": 2,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 49,
+        "points": {
+            "MCTS Player": 5,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 42,
+        "points": {
+            "MCTS Player": 4,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 45,
+        "points": {
+            "MCTS Player": 5,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "MCTS Player",
+        "numTurns": 57,
+        "points": {
+            "MCTS Player": 10,
+            "Heuristic Player": 7
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 56,
+        "points": {
+            "MCTS Player": 7,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 58,
+        "points": {
+            "MCTS Player": 4,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 58,
+        "points": {
+            "MCTS Player": 5,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 56,
+        "points": {
+            "MCTS Player": 5,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 35,
+        "points": {
+            "MCTS Player": 4,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "MCTS Player",
+        "numTurns": 67,
+        "points": {
+            "MCTS Player": 10,
+            "Heuristic Player": 3
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 51,
+        "points": {
+            "MCTS Player": 4,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 51,
+        "points": {
+            "MCTS Player": 7,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 41,
+        "points": {
+            "MCTS Player": 6,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 40,
+        "points": {
+            "MCTS Player": 6,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 42,
+        "points": {
+            "MCTS Player": 6,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 75,
+        "points": {
+            "MCTS Player": 9,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 38,
+        "points": {
+            "MCTS Player": 5,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 63,
+        "points": {
+            "MCTS Player": 7,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "MCTS Player",
+        "numTurns": 56,
+        "points": {
+            "MCTS Player": 10,
+            "Heuristic Player": 7
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 35,
+        "points": {
+            "MCTS Player": 5,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 49,
+        "points": {
+            "MCTS Player": 3,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "MCTS Player",
+        "numTurns": 67,
+        "points": {
+            "MCTS Player": 10,
+            "Heuristic Player": 7
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 28,
+        "points": {
+            "MCTS Player": 4,
+            "Heuristic Player": 11
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 78,
+        "points": {
+            "MCTS Player": 8,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 40,
+        "points": {
+            "MCTS Player": 3,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 56,
+        "points": {
+            "MCTS Player": 5,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 52,
+        "points": {
+            "MCTS Player": 5,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 36,
+        "points": {
+            "MCTS Player": 5,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 54,
+        "points": {
+            "MCTS Player": 6,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "MCTS Player",
+        "numTurns": 46,
+        "points": {
+            "MCTS Player": 10,
+            "Heuristic Player": 9
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 59,
+        "points": {
+            "MCTS Player": 4,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 39,
+        "points": {
+            "MCTS Player": 6,
+            "Heuristic Player": 10
+        }
+    },
+    {
+        "winner": "MCTS Player",
+        "numTurns": 93,
+        "points": {
+            "MCTS Player": 10,
+            "Heuristic Player": 8
+        }
+    },
+    {
+        "winner": "MCTS Player",
+        "numTurns": 48,
+        "points": {
+            "MCTS Player": 10,
+            "Heuristic Player": 6
+        }
+    },
+    {
+        "winner": "Heuristic Player",
+        "numTurns": 58,
+        "points": {
+            "MCTS Player": 2,
+            "Heuristic Player": 11
+        }
+    }
+]

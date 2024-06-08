@@ -5,5 +5,5 @@ setup(
     version='0.0.1',
     description='Custom Catan Environment for OpenAI Gym',
     packages=find_packages(),
-    install_requires=['gym', 'numpy','stable-baselines3'],
+    install_requires=['gymnasium', 'numpy','stable-baselines3','sb3_contrib'],
 )

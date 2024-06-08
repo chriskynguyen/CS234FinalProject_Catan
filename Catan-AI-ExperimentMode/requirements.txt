@@ -1,0 +1,7 @@
+pygame
+numpy
+tensorflow
+matplotlib
+gym
+stable-baselines3
+setuptools

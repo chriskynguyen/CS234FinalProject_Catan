@@ -7,6 +7,9 @@ import numpy as np
 from mcts import *
 import copy
 
+# for loading ppo policy
+from sb3_contrib.ppo_mask import MaskablePPO
+
 #Class definition for an AI player
 class heuristicAIPlayer(player):
     
@@ -20,7 +23,7 @@ class heuristicAIPlayer(player):
 
 
     #Function to build an initial settlement - just choose random spot for now
-    def initial_setup(self, board):
+    def initial_setup(self, board, sim=False):
         #Build random settlement
         possibleVertices = board.get_setup_settlements(self)
 
@@ -58,13 +61,13 @@ class heuristicAIPlayer(player):
             if(resourceType not in self.setupResources and resourceType != 'DESERT'):
                 self.setupResources.append(resourceType)
 
-        self.build_settlement(vertexToBuild, board)
+        self.build_settlement(vertexToBuild, board, sim)
 
 
         #Build random road
         possibleRoads = board.get_setup_roads(self)
         randomEdge = np.random.randint(0, len(possibleRoads.keys()))
-        self.build_road(list(possibleRoads.keys())[randomEdge][0], list(possibleRoads.keys())[randomEdge][1], board)
+        self.build_road(list(possibleRoads.keys())[randomEdge][0], list(possibleRoads.keys())[randomEdge][1], board, sim)
 
     def run_action(self, action, board):
         action_type = action[0]
@@ -96,7 +99,9 @@ class heuristicAIPlayer(player):
                 break
             state = {'board': board, 'current_player': self, 'queue': queue}
             #print("Calling MCTS")
-            tree = MCTS(state, self.exploration_param)
+            model = MaskablePPO.load()
+
+            tree = MCTS(state, model, self.exploration_param)
             action = tree.bestMove(iterations=50) # tuple ('action', info, ...)
             #print(f"Best action determined: {action[0]}")
             if action[0] == 'end_turn':
