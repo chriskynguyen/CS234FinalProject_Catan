@@ -1,0 +1,8 @@
+Metadata-Version: 2.1
+Name: catan
+Version: 0.0.1
+Summary: Custom Catan Environment for OpenAI Gym
+Requires-Dist: gymnasium
+Requires-Dist: numpy
+Requires-Dist: stable-baselines3
+Requires-Dist: sb3_contrib

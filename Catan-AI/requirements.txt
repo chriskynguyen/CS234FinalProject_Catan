@@ -2,6 +2,8 @@ pygame
 numpy
 tensorflow
 matplotlib
-gym
+gymnasium
 stable-baselines3
 setuptools
+tqdm
+rich
