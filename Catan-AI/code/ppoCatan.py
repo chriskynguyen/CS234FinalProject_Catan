@@ -20,6 +20,33 @@ def mask_fn(env: gym.Env) -> np.ndarray:
     mask[valid_actions] = 1
     return np.array([bool(i) for i in mask])
 
+def plot_results():
+    # Load the evaluations.npz file
+    evaluation_file = './results/Catan-ppo/logs/evaluations.npz'
+    evaluations = np.load(evaluation_file)
+
+    # Extract the data
+    timesteps = evaluations['timesteps']
+    results = evaluations['results']
+
+    # Calculate mean and standard deviation of rewards
+    mean_rewards = np.mean(results, axis=1)
+
+    # Sort the data by timesteps
+    sorted_indices = np.argsort(timesteps)
+    sorted_timesteps = timesteps[sorted_indices]
+    sorted_mean_rewards = mean_rewards[sorted_indices]
+
+    # Plot the mean rewards with error bars for standard deviation
+    plt.figure(figsize=(10, 6))
+    plt.plot(sorted_timesteps, sorted_mean_rewards)
+    plt.xlabel('Timesteps')
+    plt.ylabel('Mean Reward')
+    #plt.title('Evaluation Mean Reward over Time')
+    #plt.legend()
+    plt.grid()
+    plt.show()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -45,6 +72,18 @@ if __name__ == "__main__":
         type=int,
         default=1000
     )
+    parser.add_argument(
+        "--plot-result",
+        type=bool,
+        default=True
+    )
+    parser.add_argument(
+        "--skip-training",
+        type=bool,
+        help="Skip training and only do plotting",
+        default=False
+    )
+
     args = parser.parse_args()
 
     output_path = pathlib.Path(__file__).parent.joinpath(
@@ -68,42 +107,23 @@ if __name__ == "__main__":
         eval_freq=args.eval_freq,
         render=False
     )
+    if not args.skip_training:
+        # Training the model
+        if not output_path.exists():
+            output_path.mkdir(parents=True)
+        for iteration in range(args.iterations):
+            print("ITERATION: ", str(iteration))
+            model.learn(total_timesteps=args.rl_steps, callback=eval_callback, progress_bar=True)
 
-    # Training the model
-    if not output_path.exists():
-        output_path.mkdir(parents=True)
-    for iteration in range(args.iterations):
-        print("ITERATION: ", str(iteration))
-        model.learn(total_timesteps=args.rl_steps, callback=eval_callback, progress_bar=True)
+            if iteration % args.update_interval == 0:
+                current_policy_path = f'./results/current_policy_{iteration}.pth'
+                model.save(current_policy_path)
+                # update env policy to newly saved policy
+                env.update_fixed_policy(model.load(current_policy_path))
+        
 
-        if iteration % args.update_interval == 0:
-            current_policy_path = f'./results/current_policy_{iteration}.pth'
-            model.save(current_policy_path)
-            # update env policy to newly saved policy
-            env.update_fixed_policy(model.load(current_policy_path))
-    
+        final_model_path = output_path.joinpath("final_model.zip")
+        model.save(final_model_path)
 
-    final_model_path = output_path.joinpath("final_model.zip")
-    model.save(final_model_path)
-
-    # Load the evaluations.npz file
-    evaluation_file = './results/Catan-ppo/logs/evaluations.npz'
-    evaluations = np.load(evaluation_file)
-
-    # Extract the data
-    timesteps = evaluations['timesteps']
-    results = evaluations['results']
-
-    # Calculate mean and standard deviation of rewards
-    mean_rewards = np.mean(results, axis=1)
-    std_rewards = np.std(results, axis=1)
-
-    # Plot the mean rewards with error bars for standard deviation
-    plt.figure(figsize=(10, 6))
-    plt.errorbar(timesteps, mean_rewards, yerr=std_rewards, label='Mean Reward +/- Std Dev')
-    plt.xlabel('Timesteps')
-    plt.ylabel('Mean Reward')
-    plt.title('Evaluation Mean Reward over Time')
-    plt.legend()
-    plt.grid()
-    plt.show()
+    if args.plot_result:
+        plot_results()

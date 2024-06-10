@@ -1,7 +1,7 @@
 import subprocess
 import json
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 def run_experiment(numPlayers, playerConfigs):
     playerConfigs_str = json.dumps(playerConfigs)
@@ -16,10 +16,10 @@ def run_experiment(numPlayers, playerConfigs):
     
     return data
 
-def plot_results(settlements_built, cities_built):
+def plot_results(settlements_built, cities_built, num_experiments):
     players = [player_name for player_name in settlements_built.keys()]
     
-    games = 100 
+    games = list(range(num_experiments))
     
     fig, axes = plt.subplots(2, 1, figsize=(12, 10))
     
@@ -42,7 +42,7 @@ def plot_results(settlements_built, cities_built):
     plt.tight_layout()
     plt.show()
 
-def analyze_results(results):
+def analyze_results(results, num_experiments):
     win_counts = {}
     total_turns = []
     player_points = {}
@@ -51,8 +51,8 @@ def analyze_results(results):
         winner = result['winner']
         num_turns = result['numTurns']
         points = result['points']
-        settlements = results['settlementsBuilt']
-        cities = results['citiesBuilt']
+        settlements = result['settlementsBuilt']
+        cities = result['citiesBuilt']
 
         # Track win counts
         if winner not in win_counts:
@@ -67,6 +67,9 @@ def analyze_results(results):
             if player not in player_points:
                 player_points[player] = []
             player_points[player].append(pts)
+        
+        #plot settlements and cities
+        plot_results(settlements, cities, num_experiments)
 
     # Calculate statistics
     total_games = len(results)
@@ -89,17 +92,15 @@ def analyze_results(results):
     print("\nStandard Deviation of Points per Player:")
     for player, std in std_points.items():
         print(f"{player}: {std:.2f}")
-
-    plot_results(settlements, cities)
     
 
 def main():
-    num_experiments = 100
+    num_experiments = 50
     results = []
     numPlayers = 3
     playerConfigs = [
         {"name": "MCTS Player1", "usePPO": "no", "exploration_param": 0.5, "strategy": "mcts"},
-        {"name": "MCTS Player2", "usePPO": "no", "exploration_param": 0.5, "strategy": "mcts"},
+        {"name": "MCTS Player2", "usePPO": "yes", "exploration_param": 0.5, "strategy": "mcts"},
         {"name": "Heuristic Player", "usePPO": "no", "exploration_param": 0.5, "strategy": "heuristic"}
     ]
     
@@ -118,7 +119,7 @@ def main():
     with open('experiment_results.json', 'r') as f:
         results = json.load(f)
     
-    analyze_results(results)
+    analyze_results(results, num_experiments)
 
 if __name__ == "__main__":
     main()

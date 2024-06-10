@@ -9,8 +9,10 @@ from heuristicAIPlayer import *
 from collections import deque
 import numpy as np
 import sys, pygame
+from sb3_contrib.ppo_mask import MaskablePPO
 
 RESOURCE_DICT = {'DESERT':0, 'ORE':1, 'BRICK':2, 'WHEAT':3, 'WOOD':4, 'SHEEP':5}
+PLAYER_RESOURCE_TYPES = ['ORE', 'BRICK', 'WHEAT', 'WOOD', 'SHEEP']
 ACTIONS_ARRAY = [
     *[("build_road", v1, v2, length) for v1 in range(54) for v2 in range(54) for length in range(1, 4)],
     *[("build_settlement", v1) for v1 in range(54)],
@@ -270,12 +272,12 @@ class catanAISimGame():
         return False
 
     # function to simulate moves
-    # TODO: implement with PPO
+    # implement with PPO
     def sim_move(self, board, player_i):
         if player_i.usePPO:
-            obs = self.convert_to_observation(player_i)
             done = False
             while not done:
+                obs = self.convert_to_observation(player_i)
                 action, _ = self.ppo_model.predict(obs)
                 done = self.apply_action(player_i, action)
         else:
