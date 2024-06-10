@@ -255,7 +255,8 @@ class CatanEnv(gym.Env):
             
         elif action_type == 'build_city':
             _, v = action
-            player.build_city(self.get_vertex_from_idx(v), board, sim=True)
+            if self.get_vertex_from_idx(v) in player.buildGraph['SETTLEMENTS']:
+                player.build_city(self.get_vertex_from_idx(v), board, sim=True)
 
 
         elif action_type == 'draw_devCard':

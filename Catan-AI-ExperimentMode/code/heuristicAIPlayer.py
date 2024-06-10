@@ -3,6 +3,9 @@ import numpy as np
 from mcts import *
 import copy
 
+# for loading ppo policy
+from sb3_contrib.ppo_mask import MaskablePPO
+
 class heuristicAIPlayer(player):
     def __init__(self, playerName, playerColor, usePPO=False, exploration_param=0.5, strategy="heuristic"):
         super().__init__(playerName, playerColor, usePPO, exploration_param)
@@ -73,7 +76,9 @@ class heuristicAIPlayer(player):
             if self.victoryPoints > 9:
                 break
             state = {'board': board, 'current_player': self, 'queue': queue}
-            tree = MCTS(state, self.exploration_param)
+            model = MaskablePPO.load('./results/Catan-ppo/final_model.zip')
+
+            tree = MCTS(state, model, self.exploration_param)
             action = tree.bestMove(iterations=1000) # we can increase this number to get better results
             if action[0] == 'end_turn':
                 break

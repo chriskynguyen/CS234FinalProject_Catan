@@ -36,9 +36,10 @@ class MCTS:
     """
     Monte-Carlo Tree Search. Create tree then choose best move(s) for current turn
     """
-    def __init__(self, state, exploration_param=1):
+    def __init__(self, state, ppo_model, exploration_param=1):
         self.root_node = Node(state=state, action=()) # state is dict {'board' = board, 'current_player' = ai_player, 'queue' = playerQueue}
         self.exploration_param = exploration_param
+        self.ppo_model = ppo_model
 
     def calcUCT(self, node):
         """
@@ -280,7 +281,7 @@ class MCTS:
         Result: Win(+1) and Lose(-1) 
         """
         # for debugging sim_print=False, for actual sim_print=True
-        simulate = simulation.catanAISimGame(state=node.gameState, sim_print=True) 
+        simulate = simulation.catanAISimGame(state=node.gameState, ppo_model=self.ppo_model, sim_print=True) 
         result = simulate.get_result()
         return result
 
